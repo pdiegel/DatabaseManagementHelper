@@ -12,6 +12,7 @@ class MainApp(ttk.Window):
         super().__init__()
         self.title("Red Stake Surveyors, Inc.")
         self.notebook = self.create_notebook()
+        self.resizable(False, False)
 
         sv_ttk.set_theme("light")
 
