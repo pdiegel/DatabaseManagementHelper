@@ -16,6 +16,7 @@ class IntakeSheetModel:
         9: "Retrieving data for Parcel ID number: {parcel_id}...",
         10: "Data retrieved for Parcel ID number: {parcel_id}.",
         11: "Data unavailable for County: {county}.",
+        12: "User Inputs Cleared.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -144,3 +145,9 @@ class IntakeSheetModel:
         """
         text = self.INFO_LABEL_CODES[code].format(**kwargs)
         self.info_label.config(text=text)
+
+    def clear_inputs(self) -> None:
+        """This method will clear all the input fields."""
+        for input_field in self.inputs.values():
+            input_field.delete(0, "end")
+        self.update_info_label(12)
