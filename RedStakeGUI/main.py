@@ -1,6 +1,7 @@
 import ttkbootstrap as ttk
 from .views.intake_sheet import IntakeSheetView
 import sv_ttk
+import logging
 
 
 class MainApp(ttk.Window):
@@ -24,5 +25,6 @@ class MainApp(ttk.Window):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(filename="gui.log", level=logging.INFO)
     app = MainApp()
     app.mainloop()

@@ -17,6 +17,7 @@ class IntakeSheetModel:
         10: "Data retrieved for Parcel ID number: {parcel_id}.",
         11: "Data unavailable for County: {county}.",
         12: "User Inputs Cleared.",
+        13: "Quote for {property_address} saved.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -138,3 +139,6 @@ class IntakeSheetModel:
         for input_field in self.inputs.values():
             input_field.delete(0, "end")
         self.update_info_label(12)
+
+    def save_inputs(self) -> None:
+        """This method will save the input fields to a text file."""
