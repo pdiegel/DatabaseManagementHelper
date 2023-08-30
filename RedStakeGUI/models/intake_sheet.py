@@ -1,6 +1,5 @@
-from ..constants import PARCEL_DATA_MAP, PARCEL_DATA_COUNTIES
+from ..constants import PARCEL_DATA_COUNTIES
 import ttkbootstrap as ttk
-from src.county_data_collectors.base_collector import BaseParcelDataCollector
 from .data_collection import DataCollector
 
 

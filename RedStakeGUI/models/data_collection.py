@@ -1,4 +1,4 @@
-from ..constants import PARCEL_DATA_MAP, PARCEL_DATA_COUNTIES
+from ..constants import PARCEL_DATA_MAP
 from src.county_data_collectors.base_collector import BaseParcelDataCollector
 import logging
 
@@ -35,6 +35,6 @@ class DataCollector:
         try:
             parcel = county_data_collector(self.parcel_id)
         except IndexError as e:
-            logging.error(f"Error {e}")
-            return
+            logging.error(e)
+            raise e
         return parcel.parcel_data
