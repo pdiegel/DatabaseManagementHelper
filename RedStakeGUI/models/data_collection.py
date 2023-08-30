@@ -1,13 +1,13 @@
 from ..constants import PARCEL_DATA_MAP, PARCEL_DATA_COUNTIES
-import ttkbootstrap as ttk
 from src.county_data_collectors.base_collector import BaseParcelDataCollector
+import logging
 
 
 class DataCollector:
-    def __init__(self):
-        self.county = None
-        self.parcel_id = None
-        self.county_data_collector = self.get_county_data_collector()
+    def __init__(self, county: str, parcel_id: str):
+        self.county = county
+        self.parcel_id = parcel_id
+        self.parcel_data = self.get_parcel_data()
 
     def get_county_data_collector(self) -> BaseParcelDataCollector:
         """This method will return the specific data collector class for
@@ -18,21 +18,23 @@ class DataCollector:
                 county specified in the County dropdown menu.
                 BaseParcelDataCollector is an abstract base class.
         """
-        parcel_id = self.inputs["Parcel ID"].get().strip()
-        county = self.inputs["County"].get().strip()
+        return PARCEL_DATA_MAP.get(self.county, None)
 
-        if parcel_id == "" and county == "":
-            self.update_info_label(3)
-            return
-        if parcel_id == "":
-            self.update_info_label(2)
-            return
-        if county == "":
-            self.update_info_label(1)
-            return
-        if county not in PARCEL_DATA_COUNTIES:
-            self.update_info_label(11, county=county)
+    def get_parcel_data(self) -> dict:
+        """This method will return the parcel data dictionary for the
+        parcel ID number entered in the Parcel ID field.
+
+        Returns:
+            dict: The parcel data dictionary for the parcel ID number
+                entered in the Parcel ID field.
+        """
+        county_data_collector = self.get_county_data_collector()
+        if county_data_collector is None:
             return
 
-        self.update_info_label(9, parcel_id=parcel_id)
-        return PARCEL_DATA_MAP[county]
+        try:
+            parcel = county_data_collector(self.parcel_id)
+        except IndexError as e:
+            logging.error(f"Error {e}")
+            return
+        return parcel.parcel_data

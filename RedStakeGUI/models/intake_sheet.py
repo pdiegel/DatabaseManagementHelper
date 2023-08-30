@@ -1,6 +1,7 @@
 from ..constants import PARCEL_DATA_MAP, PARCEL_DATA_COUNTIES
 import ttkbootstrap as ttk
 from src.county_data_collectors.base_collector import BaseParcelDataCollector
+from .data_collection import DataCollector
 
 
 class IntakeSheetModel:
@@ -29,50 +30,37 @@ class IntakeSheetModel:
         self.info_label = info_label
         self.inputs = inputs
 
-    def get_county_data_collector(self) -> BaseParcelDataCollector:
-        """This method will return the specific data collector class for
-        the county specified in the County dropdown menu.
-
-        Returns:
-            BaseParcelDataCollector: The data collector class for the
-                county specified in the County dropdown menu.
-                BaseParcelDataCollector is an abstract base class.
-        """
-        parcel_id = self.inputs["Parcel ID"].get().strip()
-        county = self.inputs["County"].get().strip()
-
+    def validate_parcel_inputs(self, parcel_id: str, county: str) -> bool:
         if parcel_id == "" and county == "":
             self.update_info_label(3)
-            return
+            return False
         if parcel_id == "":
             self.update_info_label(2)
-            return
+            return False
         if county == "":
             self.update_info_label(1)
-            return
+            return False
         if county not in PARCEL_DATA_COUNTIES:
-            self.update_info_label(11, county=county)
-            return
-
-        self.update_info_label(9, parcel_id=parcel_id)
-        return PARCEL_DATA_MAP[county]
+            self.update_info_label(11)
+            return False
+        return True
 
     def display_parcel_data(self) -> None:
         """This method will display the parcel data for the parcel ID
         number entered in the Parcel ID field. It will also display the
         address, zip code, and plat name for the parcel ID number."""
-        county_data_collector = self.get_county_data_collector()
-        if county_data_collector is None:
+        parcel_id = self.inputs["Parcel ID"].get().strip()
+        county = self.inputs["County"].get().strip()
+
+        if not self.validate_parcel_inputs(parcel_id, county):
             return
 
-        parcel_id = self.inputs["Parcel ID"].get().strip()
         try:
-            parcel = county_data_collector(parcel_id)
+            parcel = DataCollector(county, parcel_id)
             parcel_data = parcel.parcel_data
+            self.update_info_label(9, parcel_id=parcel_id)
         except IndexError:
-            self.update_info_label(
-                4, parcel_id=parcel_id, county=county_data_collector.COUNTY
-            )
+            self.update_info_label(4, parcel_id=parcel_id, county=county)
             return
 
         self.update_inputs(parcel_data)
