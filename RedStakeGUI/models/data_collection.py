@@ -4,9 +4,9 @@ import logging
 
 
 class DataCollector:
-    def __init__(self, county: str, parcel_id: str):
-        self.county = county
+    def __init__(self, parcel_id: str, county: str):
         self.parcel_id = parcel_id
+        self.county = county
         self.parcel_data = self.get_parcel_data()
 
     def get_county_data_collector(self) -> BaseParcelDataCollector:
