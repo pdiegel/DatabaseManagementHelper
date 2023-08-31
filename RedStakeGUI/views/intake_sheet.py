@@ -26,7 +26,7 @@ class IntakeSheetView(ttk.Frame):
             "Email": self.model.email_quote,
             "Print": self.model.print_quote,
             "Clear": self.model.clear_inputs,
-            "Settings": None,
+            "Settings": self.model.create_settings_window,
         }
         self.create_buttons()
 

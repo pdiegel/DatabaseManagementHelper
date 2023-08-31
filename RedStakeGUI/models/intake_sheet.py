@@ -258,3 +258,8 @@ class IntakeSheetModel:
             self.update_info_label(19)
         except OSError:
             self.update_info_label(21)
+
+    def create_settings_window(self) -> None:
+        """Creates the settings window. This window will allow you to
+        change the email login credentials and the email address to
+        which the quote will be sent."""
