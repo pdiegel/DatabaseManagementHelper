@@ -28,6 +28,9 @@ class IntakeSheetModel:
         16: "Quote for {property_address} updated with new data.",
         17: "Invalid email login credentials. Please update settings.",
         18: "Quote for {property_address} sent via email.",
+        19: "Error printing quote: File is open in another program.",
+        20: "Quote for {property_address} printed.",
+        21: "Error printing quote.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -37,10 +40,21 @@ class IntakeSheetModel:
     }
 
     def __init__(self, inputs: dict, info_label: ttk.Label):
-        self.info_label = info_label
         self.inputs = inputs
+        self.info_label = info_label
 
     def validate_parcel_inputs(self, parcel_id: str, county: str) -> bool:
+        """Validates the Parcel ID and County fields. Displays an error
+        message if either field is empty. Displays an error message if
+        the county is not in the PARCEL_DATA_COUNTIES list.
+
+        Args:
+            parcel_id (str): The parcel ID number.
+            county (str): The county for the parcel ID number.
+
+        Returns:
+            bool: True if the Parcel ID and County fields are valid,
+        """
         if parcel_id == "" and county == "":
             self.update_info_label(3)
             return False
@@ -56,9 +70,9 @@ class IntakeSheetModel:
         return True
 
     def display_parcel_data(self) -> None:
-        """This method will display the parcel data for the parcel ID
-        number entered in the Parcel ID field. It will also display the
-        address, zip code, and plat name for the parcel ID number."""
+        """Displays the parcel data for the parcel ID number entered in
+        the Parcel ID field. Also displays the address, zip code, and
+        plat name for the parcel ID number."""
         parcel_id = self.inputs["Parcel ID"].get().strip()
         county = self.inputs["County"].get().strip()
 
@@ -66,16 +80,29 @@ class IntakeSheetModel:
             return
 
         try:
-            parcel_data = self.get_parcel_data(county, parcel_id)
+            parcel_data = self.get_parcel_data(parcel_id, county)
         except IndexError:
             return
 
         self.update_inputs(parcel_data)
         self.update_info_label(10, parcel_id=parcel_id)
 
-    def get_parcel_data(self, county, parcel_id) -> dict:
+    def get_parcel_data(self, parcel_id: str, county: str) -> dict:
+        """Gets the parcel data for the parcel ID number.
+
+        Args:
+            parcel_id (str): The parcel ID number.
+            county (str): The county for the parcel ID number.
+
+        Returns:
+            dict: The parcel data dictionary.
+
+        Raises:
+            IndexError: If the parcel ID number is not found in the
+                county.
+        """
         try:
-            parcel = DataCollector(county, parcel_id)
+            parcel = DataCollector(parcel_id, county)
             parcel_data = parcel.parcel_data
             self.update_info_label(9, parcel_id=parcel_id)
         except IndexError:
@@ -84,9 +111,9 @@ class IntakeSheetModel:
         return parcel_data
 
     def update_inputs(self, parcel_data: dict) -> None:
-        """This method will update the Address, Zip Code, and Plat
-        fields with the data from the parcel data dictionary. It will
-        also update the Lot & Block and Plat Book & Page fields.
+        """Updates the Address, Zip Code, and Plat fields with the data
+        from the parcel data dictionary. Also updates the Lot & Block
+        and Plat Book & Page fields.
 
         Args:
             parcel_data (dict): The parcel data dictionary.
@@ -99,8 +126,8 @@ class IntakeSheetModel:
         self.update_plat_book_and_page(parcel_data)
 
     def update_lot_and_block(self, parcel_data: dict) -> None:
-        """This method will update the Lot & Block field with the data
-        from the parcel data dictionary.
+        """Updates the Lot & Block field with the data from the parcel
+        data dictionary.
 
         Args:
             parcel_data (dict): The parcel data dictionary.
@@ -118,8 +145,8 @@ class IntakeSheetModel:
         self.inputs["Lot & Block"].insert(0, lot_and_block)
 
     def update_plat_book_and_page(self, parcel_data: dict) -> None:
-        """This method will update the Plat Book & Page field with the
-        data from the parcel data dictionary.
+        """Updates the Plat Book & Page field with the data from the
+        parcel data dictionary.
 
         Args:
             parcel_data (dict): The parcel data dictionary.
@@ -137,7 +164,7 @@ class IntakeSheetModel:
         self.inputs["Plat Book & Page"].insert(0, plat_book_and_page)
 
     def update_info_label(self, code: int, **kwargs) -> None:
-        """This method will update the info label with the text from the
+        """Updates the info label with the text from the
         INFO_LABEL_CODES dictionary.
 
         Args:
@@ -151,13 +178,13 @@ class IntakeSheetModel:
         self.info_label.config(text=text)
 
     def clear_inputs(self) -> None:
-        """This method will clear all the input fields."""
+        """Clears all the input fields."""
         for input_field in self.inputs.values():
             input_field.delete(0, "end")
         self.update_info_label(12)
 
     def save_inputs(self) -> bool:
-        """This method will save the input fields to a text file.
+        """Saves the input fields to a text file.
 
         Returns:
             bool: True if the file was saved successfully, False if not."""
@@ -187,10 +214,10 @@ class IntakeSheetModel:
         return False
 
     def email_quote(self) -> None:
-        """This method will email the quote to the email address
-        specified in the settings. It will also save the quote. You can
-        manually change the settings in the data/settings.json file, or
-        you can use the Settings button to open the Settings window."""
+        """Emails the quote to the email address specified in the
+        settings. It will also save the quote. You can manually change
+        the settings in the data/settings.json file, or you can use the
+        Settings button to open the Settings window."""
         parcel_id = self.inputs["Parcel ID"].get().strip()
         county = self.inputs["County"].get().strip()
 
@@ -198,7 +225,7 @@ class IntakeSheetModel:
             return
 
         try:
-            parcel_data = self.get_parcel_data(county, parcel_id)
+            parcel_data = self.get_parcel_data(parcel_id, county)
         except IndexError:
             return
 
@@ -213,3 +240,21 @@ class IntakeSheetModel:
             )
         except smtplib.SMTPAuthenticationError:
             self.update_info_label(17)
+
+    def print_quote(self) -> None:
+        """Saves and prints the current quote. Updates the quote if it
+        already exists. If the quote is already open in another program,
+        displays an error message. Windows is the only operating system
+        that is supported at the moment."""
+        if not self.save_inputs():
+            return
+
+        try:
+            os.startfile(self.file_save_path, "print")
+            self.update_info_label(
+                20, property_address=self.inputs["Address"].get()
+            )
+        except PermissionError:
+            self.update_info_label(19)
+        except OSError:
+            self.update_info_label(21)

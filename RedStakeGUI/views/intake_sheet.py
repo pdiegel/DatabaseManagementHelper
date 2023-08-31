@@ -24,7 +24,7 @@ class IntakeSheetView(ttk.Frame):
             "Get Parcel Info": self.model.display_parcel_data,
             "Save": self.model.save_inputs,
             "Email": self.model.email_quote,
-            "Print": None,
+            "Print": self.model.print_quote,
             "Clear": self.model.clear_inputs,
             "Settings": None,
         }
