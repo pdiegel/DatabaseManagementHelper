@@ -145,7 +145,7 @@ dmypy.json
 cython_debug/
 
 # Email password file
-/data/settings.json
+RedStakeGUI/data/settings.json
 
 
 # PyCharm
