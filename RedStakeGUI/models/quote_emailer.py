@@ -1,13 +1,10 @@
-import json
 import smtplib
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Tuple
-
-from ..constants import JSON_SETTINGS_PATH
+from ..constants import get_email_settings
 
 
 class QuoteEmail:
@@ -17,25 +14,9 @@ class QuoteEmail:
         self.inputs = inputs
         self.parcel_data = parcel_data
         self.quote_file_path = quote_file_path
-        self.sender, self.receiver, self.password = self.get_email_settings()
+        self.sender, self.receiver, self.password = get_email_settings()
         self.subject = self.create_subject()
         self.message = self.create_message()
-
-    def get_email_settings(self) -> Tuple[str, str, str]:
-        """This method will return the email settings from the
-        settings.json file.
-
-        Returns:
-            Tuple[str, str, str]: The sender email address, receiver
-                email address, and sender email password.
-        """
-        with open(JSON_SETTINGS_PATH, "r") as file:
-            settings = json.load(file)
-
-        sender = settings.get("sender_email_address", "")
-        receiver = settings.get("receiever_email_address", "")
-        password = settings.get("sender_email_password", "")
-        return sender, receiver, password
 
     def create_subject(self) -> str:
         """This method will create the subject for the email.
