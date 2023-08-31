@@ -1,7 +1,11 @@
-from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
-import ttkbootstrap as ttk
-from .data_collection import DataCollector
 import os
+import smtplib
+
+import ttkbootstrap as ttk
+
+from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
+from .data_collection import DataCollector
+from .quote_emailer import QuoteEmail
 
 
 class IntakeSheetModel:
@@ -22,6 +26,8 @@ class IntakeSheetModel:
         14: "Error saving quote for {property_address}.",
         15: "Error saving quote: File is open in another program.",
         16: "Quote for {property_address} updated with new data.",
+        17: "Invalid email login credentials. Please update settings.",
+        18: "Quote for {property_address} sent via email.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -45,7 +51,7 @@ class IntakeSheetModel:
             self.update_info_label(1)
             return False
         if county not in PARCEL_DATA_COUNTIES:
-            self.update_info_label(11)
+            self.update_info_label(11, county=county)
             return False
         return True
 
@@ -60,16 +66,22 @@ class IntakeSheetModel:
             return
 
         try:
+            parcel_data = self.get_parcel_data(county, parcel_id)
+        except IndexError:
+            return
+
+        self.update_inputs(parcel_data)
+        self.update_info_label(10, parcel_id=parcel_id)
+
+    def get_parcel_data(self, county, parcel_id) -> dict:
+        try:
             parcel = DataCollector(county, parcel_id)
             parcel_data = parcel.parcel_data
             self.update_info_label(9, parcel_id=parcel_id)
         except IndexError:
             self.update_info_label(4, parcel_id=parcel_id, county=county)
-            return
-
-        self.update_inputs(parcel_data)
-        self.update_info_label(10, parcel_id=parcel_id)
-        print(parcel_data)
+            raise IndexError
+        return parcel_data
 
     def update_inputs(self, parcel_data: dict) -> None:
         """This method will update the Address, Zip Code, and Plat
@@ -144,19 +156,22 @@ class IntakeSheetModel:
             input_field.delete(0, "end")
         self.update_info_label(12)
 
-    def save_inputs(self) -> None:
-        """This method will save the input fields to a text file."""
+    def save_inputs(self) -> bool:
+        """This method will save the input fields to a text file.
+
+        Returns:
+            bool: True if the file was saved successfully, False if not."""
         address = self.inputs["Address"].get().strip()
 
         if not address:
             self.update_info_label(7)
-            return
+            return False
 
         file_name = f"{address}.txt"
-        file_save_path = os.path.join(QUOTES_DIRECTORY, file_name)
-        quote_exists = os.path.exists(file_save_path)
+        self.file_save_path = os.path.join(QUOTES_DIRECTORY, file_name)
+        quote_exists = os.path.exists(self.file_save_path)
         try:
-            with open(file_save_path, "w") as quote_file:
+            with open(self.file_save_path, "w") as quote_file:
                 for key, input_field in self.inputs.items():
                     quote_file.write(f"{key}: {input_field.get()}\n")
         except PermissionError:
@@ -168,3 +183,33 @@ class IntakeSheetModel:
                 self.update_info_label(16, property_address=address)
             else:
                 self.update_info_label(13, property_address=address)
+            return True
+        return False
+
+    def email_quote(self) -> None:
+        """This method will email the quote to the email address
+        specified in the settings. It will also save the quote. You can
+        manually change the settings in the data/settings.json file, or
+        you can use the Settings button to open the Settings window."""
+        parcel_id = self.inputs["Parcel ID"].get().strip()
+        county = self.inputs["County"].get().strip()
+
+        if not self.validate_parcel_inputs(parcel_id, county):
+            return
+
+        try:
+            parcel_data = self.get_parcel_data(county, parcel_id)
+        except IndexError:
+            return
+
+        if not self.save_inputs():
+            return
+
+        try:
+            emailer = QuoteEmail(self.inputs, parcel_data, self.file_save_path)
+            emailer.send_email()
+            self.update_info_label(
+                18, property_address=parcel_data.get("PRIMARY_ADDRESS", "")
+            )
+        except smtplib.SMTPAuthenticationError:
+            self.update_info_label(17)
