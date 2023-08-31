@@ -16,9 +16,9 @@ if not os.path.exists(JSON_SETTINGS_PATH):
         json.dump(settings, file)
 
 
-# SERVER_DIRECTORY = "\\server"
+SERVER_DIRECTORY = "\\server"
 # Off-site Test Directory
-SERVER_DIRECTORY = os.path.join(ROOT, "TESTserver")
+# SERVER_DIRECTORY = os.path.join(ROOT, "TESTserver")
 SERVER_ACCESS_DIRECTORY = os.path.join(SERVER_DIRECTORY, "access")
 QUOTES_DIRECTORY = os.path.join(SERVER_ACCESS_DIRECTORY, "quotes")
 
