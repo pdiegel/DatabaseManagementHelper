@@ -1,7 +1,9 @@
-import ttkbootstrap as ttk
-from .views.intake_sheet import IntakeSheetView
-import sv_ttk
 import logging
+
+import sv_ttk
+import ttkbootstrap as ttk
+
+from .views.intake_sheet import IntakeSheetView
 
 
 class MainApp(ttk.Window):
