@@ -1,13 +1,13 @@
 import json
-import os
+from pathlib import Path
 from typing import Tuple
 
 from src.county_data_collectors.county_mapper import DATA_COLLECTOR_MAP
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_DIRECTORY = os.path.join(ROOT, "data")
-
-JSON_SETTINGS_PATH = os.path.join(DATA_DIRECTORY, "settings.json")
+MAIN_TITLE = "Red Stake Surveyors, Inc."
+ROOT = Path(__file__).parent
+DATA_DIRECTORY = ROOT / "data"
+JSON_SETTINGS_PATH = DATA_DIRECTORY / "settings.json"
 
 
 def save_email_settings(
@@ -30,8 +30,14 @@ def get_email_settings() -> Tuple[str, str, str]:
         Tuple[str, str, str]: The sender email address, receiver
             email address, and sender email password.
     """
-    with open(JSON_SETTINGS_PATH, "r") as file:
-        settings = json.load(file)
+    # Error handling for corrupted settings file
+    try:
+        with open(JSON_SETTINGS_PATH, "r") as file:
+            settings = json.load(file)
+    except json.decoder.JSONDecodeError:
+        save_email_settings()
+        with open(JSON_SETTINGS_PATH, "r") as file:
+            settings = json.load(file)
 
     sender = settings.get("sender_email_address", "")
     receiver = settings.get("receiever_email_address", "")
@@ -39,20 +45,20 @@ def get_email_settings() -> Tuple[str, str, str]:
     return sender, receiver, password
 
 
-if not os.path.exists(JSON_SETTINGS_PATH):
+if not JSON_SETTINGS_PATH.exists():
     save_email_settings()
 
-SERVER_DIRECTORY = "\\server"
+SERVER_DIRECTORY = Path("\\server")
 # Off-site Test Directory
 # SERVER_DIRECTORY = os.path.join(ROOT, "TESTserver")
-SERVER_ACCESS_DIRECTORY = os.path.join(SERVER_DIRECTORY, "access")
-QUOTES_DIRECTORY = os.path.join(SERVER_ACCESS_DIRECTORY, "quotes")
+SERVER_ACCESS_DIRECTORY = SERVER_DIRECTORY / "access"
+QUOTES_DIRECTORY = SERVER_ACCESS_DIRECTORY / "quotes"
 
 
-if not os.path.exists(QUOTES_DIRECTORY):
-    os.makedirs(QUOTES_DIRECTORY)
+if not QUOTES_DIRECTORY.exists():
+    QUOTES_DIRECTORY.mkdir(parents=True)
 
 
-INTAKE_LABELS = os.path.join(DATA_DIRECTORY, "intake_labels.txt")
+INTAKE_LABELS = DATA_DIRECTORY / "intake_labels.txt"
 PARCEL_DATA_MAP = DATA_COLLECTOR_MAP
 PARCEL_DATA_COUNTIES = list(PARCEL_DATA_MAP.keys())
