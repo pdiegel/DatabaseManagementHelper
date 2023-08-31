@@ -22,9 +22,10 @@ class IntakeSheetView(ttk.Frame):
         self.model = IntakeSheetModel(self.inputs, self.info_label)
         self.buttons = {
             "Get Parcel Info": self.model.display_parcel_data,
-            "Clear": self.model.clear_inputs,
+            "Save": self.model.save_inputs,
             "Email": None,
             "Print": None,
+            "Clear": self.model.clear_inputs,
             "Settings": None,
         }
         self.create_buttons()

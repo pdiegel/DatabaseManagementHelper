@@ -1,6 +1,7 @@
-from ..constants import PARCEL_DATA_COUNTIES
+from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
 import ttkbootstrap as ttk
 from .data_collection import DataCollector
+import os
 
 
 class IntakeSheetModel:
@@ -11,12 +12,16 @@ class IntakeSheetModel:
         4: "Error: Parcel ID number {parcel_id} not found in {county}.",
         5: "Please enter a Phone Number and/or Email Address.",
         6: "Please enter the name of the person requesting the survey.",
-        7: "Please enter the address of the person requesting the survey.",
+        7: "Please enter the property address.",
         8: "Please enter the Scope of Work.",
         9: "Retrieving data for Parcel ID number: {parcel_id}...",
         10: "Data retrieved for Parcel ID number: {parcel_id}.",
         11: "Data unavailable for County: {county}.",
         12: "User Inputs Cleared.",
+        13: "Quote for {property_address} saved.",
+        14: "Error saving quote for {property_address}.",
+        15: "Error saving quote: File is open in another program.",
+        16: "Quote for {property_address} updated with new data.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -138,3 +143,28 @@ class IntakeSheetModel:
         for input_field in self.inputs.values():
             input_field.delete(0, "end")
         self.update_info_label(12)
+
+    def save_inputs(self) -> None:
+        """This method will save the input fields to a text file."""
+        address = self.inputs["Address"].get().strip()
+
+        if not address:
+            self.update_info_label(7)
+            return
+
+        file_name = f"{address}.txt"
+        file_save_path = os.path.join(QUOTES_DIRECTORY, file_name)
+        quote_exists = os.path.exists(file_save_path)
+        try:
+            with open(file_save_path, "w") as quote_file:
+                for key, input_field in self.inputs.items():
+                    quote_file.write(f"{key}: {input_field.get()}\n")
+        except PermissionError:
+            self.update_info_label(15)
+        except OSError:
+            self.update_info_label(14, property_address=address)
+        else:
+            if quote_exists:
+                self.update_info_label(16, property_address=address)
+            else:
+                self.update_info_label(13, property_address=address)
