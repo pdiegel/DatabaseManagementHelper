@@ -1,4 +1,5 @@
 import ttkbootstrap as ttk
+
 from ..constants import INTAKE_LABELS, PARCEL_DATA_COUNTIES
 from ..models.intake_sheet import IntakeSheetModel
 
@@ -29,7 +30,6 @@ class IntakeSheetView(ttk.Frame):
             "Settings": self.model.create_settings_window,
         }
         self.create_buttons()
-
         self.pack()
 
     def create_header(self) -> None:

@@ -4,6 +4,7 @@ import smtplib
 import ttkbootstrap as ttk
 
 from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
+from ..views.email_settings import EmailSettings
 from .data_collection import DataCollector
 from .quote_emailer import QuoteEmail
 
@@ -42,6 +43,7 @@ class IntakeSheetModel:
     def __init__(self, inputs: dict, info_label: ttk.Label):
         self.inputs = inputs
         self.info_label = info_label
+        self.settings_window = None
 
     def validate_parcel_inputs(self, parcel_id: str, county: str) -> bool:
         """Validates the Parcel ID and County fields. Displays an error
@@ -263,3 +265,9 @@ class IntakeSheetModel:
         """Creates the settings window. This window will allow you to
         change the email login credentials and the email address to
         which the quote will be sent."""
+        if self.settings_window is None:
+            self.settings_window = EmailSettings(self)
+
+    def reset_settings_window(self) -> None:
+        """Resets the settings window."""
+        self.settings_window = None
