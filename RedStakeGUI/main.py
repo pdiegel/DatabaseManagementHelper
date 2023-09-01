@@ -44,7 +44,7 @@ class MainApp(ttk.Window):
         if selected_tab == 0:
             self.geometry("475x750")
         elif selected_tab == 1:
-            self.geometry("400x300")
+            self.geometry("350x250")
 
 
 if __name__ == "__main__":
