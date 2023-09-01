@@ -22,7 +22,7 @@ class IntakeSheetView(BaseView):
 
         self.inputs = {label: None for label in self.get_input_labels()}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
-        self.create_fields(field_width=20)
+        self.create_fields()
 
         self.info_label = self.create_status_info_label()
         self.model = IntakeSheetModel(self.inputs, self.info_label)

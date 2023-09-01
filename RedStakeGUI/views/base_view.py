@@ -1,26 +1,52 @@
 import ttkbootstrap as ttk
+from typing import Dict, List, Callable
 
 
 class BaseView(ttk.Frame):
     def __init__(
         self,
         master: ttk.Notebook = None,
-        dropdowns: dict = None,
-        buttons: dict = None,
+        inputs: Dict[str, None] = None,
+        dropdowns: Dict[str, List[str]] = None,
+        buttons: Dict[str, Callable] = None,
         model: object = None,
         header: str = None,
         **kwargs,
     ):
+        """This class will be used as the base view class for all the
+        other views. It will contain methods that will be used by all
+        the other views. Inherits from ttk.Frame.
+
+        Args:
+            master (ttk.Notebook, optional): The root window.
+                Defaults to None.
+            inputs (Dict[str, None], optional): A dictionary containing
+                the label names as keys and widget objects as values.
+                All the widgets will be automatically created and added
+                to the dictionary. Defaults to None.
+            dropdowns (Dict[str, List[str]], optional): A dictionary
+                containing the dropdown labels as keys and a list of
+                dropdown values as values. Defaults to None.
+            buttons (Dict[str, Callable], optional): A dictionary
+                containing the button labels as keys and callable
+                functions as values. Defaults to None.
+            model (object, optional): The model object to handle the
+                logic for the view. Defaults to None.
+            header (str, optional): The header text for the view.
+                Defaults to None.
+        """
         super().__init__()
         self.master = master
-        self.header = header
-        self.inputs = {}
+        self.inputs = inputs
         self.dropdowns = dropdowns
         self.buttons = buttons
+
         if model:
             self.model = model(**kwargs)
         else:
             self.model = None
+        self.header = header
+
         self.pack()
 
     def create_header(self, font: str = "Helvetica 16 bold") -> None:
@@ -98,3 +124,15 @@ class BaseView(ttk.Frame):
         self.inputs[label] = ttk.Entry(label_row, width=field_width)
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         label_row.pack(expand=True, fill="x", padx=10, pady=5)
+
+    def create_listbox(self, widget_identifier: str = "ListBox") -> None:
+        """Creates a listbox widget for the view.
+
+        Args:
+            widget_identifier (str, optional): The identifier for the
+                widget. Defaults to "ListBox".
+        """
+        self.inputs[widget_identifier] = ttk.Listbox(self)
+        self.inputs[widget_identifier].pack(
+            expand=True, fill="both", padx=10, pady=5
+        )
