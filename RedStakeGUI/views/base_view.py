@@ -24,7 +24,7 @@ class BaseView(ttk.Frame):
         self.pack()
 
     def create_header(self, font: str = "Helvetica 16 bold") -> None:
-        """This method will create the header for the intake sheet.
+        """Creates the heading text for the view.
 
         Args:
             font (str, optional): The font for the header. Defaults to
@@ -33,9 +33,7 @@ class BaseView(ttk.Frame):
         ttk.Label(self, text=self.header, font=font).pack(pady=10)
 
     def create_fields(self, field_width: int = 25) -> None:
-        """This method will create the fields for the intake sheet. It
-        will read the labels from the intake_labels.txt file and create
-        a ttk.Entry widget for each label.
+        """Creates the label and entry/dropdown field rows for the view.
 
         Args:
             field_width (int): The width of the entry fields.
@@ -48,8 +46,7 @@ class BaseView(ttk.Frame):
             self.create_label_entry_field(label, field_width)
 
     def create_status_info_label(self) -> ttk.Label:
-        """This method will create a label to display status information
-        to the user.
+        """Creates a label to display status information to the user.
 
         Returns:
             ttk.Label: The label to display status information.
@@ -59,7 +56,7 @@ class BaseView(ttk.Frame):
         return info_label
 
     def create_buttons(self) -> None:
-        """This method will create the buttons for the intake sheet."""
+        """Creates the buttons for the view."""
 
         button_row = ttk.Frame(self)
         for button_label, button_function in self.buttons.items():
@@ -69,11 +66,11 @@ class BaseView(ttk.Frame):
         button_row.pack(expand=True, fill="x", pady=5)
 
     def create_dropdown_field(self, label: str, field_width: int) -> None:
-        """This method will create a dropdown menu for the intake sheet.
+        """Creates a dropdown menu for the view.
 
         Args:
             label (str): The label for the dropdown menu.
-            field_width (int): The width of the entry fields.
+            field_width (int): The width of the dropdown menu.
         """
         dropdown_row = ttk.Frame(self)
         ttk.Label(dropdown_row, text=f"{label.strip()}:").pack(
@@ -87,13 +84,12 @@ class BaseView(ttk.Frame):
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         dropdown_row.pack(expand=True, fill="x", padx=10, pady=5)
 
-    def create_label_entry_field(self, label: str, field_width) -> None:
-        """This method will create a label and entry field for the
-        intake sheet.
+    def create_label_entry_field(self, label: str, field_width: int) -> None:
+        """Creates a label and entry field for the view.
 
         Args:
             label (str): The label for the entry field.
-            field_width (int): The width of the entry fields.
+            field_width (int): The width of the entry field.
         """
         label_row = ttk.Frame(self)
         ttk.Label(label_row, text=f"{label.strip()}:").pack(
