@@ -6,6 +6,7 @@ import ttkbootstrap as ttk
 from .constants import MAIN_TITLE
 from .views.intake_sheet import IntakeSheetView
 from .views.website_search import WebsiteSearchView
+from .views.cad_opener import CADOpenerView
 
 
 class MainApp(ttk.Window):
@@ -19,6 +20,7 @@ class MainApp(ttk.Window):
         self.notebook_tabs = {
             IntakeSheetView: "Intake Sheet",
             WebsiteSearchView: "Website Search",
+            CADOpenerView: "CAD Opener",
         }
         self.notebook = self.create_notebook()
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
@@ -45,6 +47,8 @@ class MainApp(ttk.Window):
             self.geometry("475x750")
         elif selected_tab == 1:
             self.geometry("350x250")
+        elif selected_tab == 2:
+            self.geometry("375x400")
 
 
 if __name__ == "__main__":

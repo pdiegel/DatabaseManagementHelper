@@ -1,5 +1,6 @@
 import ttkbootstrap as ttk
 from typing import Dict, List, Callable
+from tkinter import Listbox
 
 
 class BaseView(ttk.Frame):
@@ -66,6 +67,9 @@ class BaseView(ttk.Frame):
                 Defaults to 25.
         """
         for label in self.inputs:
+            if self.dropdowns is None:
+                self.create_label_entry_field(label, field_width)
+                continue
             if label in self.dropdowns:
                 self.create_dropdown_field(label, field_width)
                 continue
@@ -132,7 +136,7 @@ class BaseView(ttk.Frame):
             widget_identifier (str, optional): The identifier for the
                 widget. Defaults to "ListBox".
         """
-        self.inputs[widget_identifier] = ttk.Listbox(self)
+        self.inputs[widget_identifier] = Listbox(self)
         self.inputs[widget_identifier].pack(
             expand=True, fill="both", padx=10, pady=5
         )
