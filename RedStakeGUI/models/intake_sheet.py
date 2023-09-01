@@ -1,4 +1,3 @@
-import os
 import smtplib
 
 import ttkbootstrap as ttk
@@ -7,6 +6,7 @@ from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
 from ..views.email_settings import EmailSettings
 from .data_collection import DataCollector
 from .quote_emailer import QuoteEmail
+import os
 
 
 class IntakeSheetModel:
@@ -197,8 +197,8 @@ class IntakeSheetModel:
             return False
 
         file_name = f"{address}.txt"
-        self.file_save_path = os.path.join(QUOTES_DIRECTORY, file_name)
-        quote_exists = os.path.exists(self.file_save_path)
+        self.file_save_path = QUOTES_DIRECTORY / file_name
+        quote_exists = self.file_save_path.exists()
         try:
             with open(self.file_save_path, "w") as quote_file:
                 for key, input_field in self.inputs.items():
