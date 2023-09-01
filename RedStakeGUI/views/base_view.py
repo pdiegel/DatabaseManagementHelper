@@ -32,7 +32,7 @@ class BaseView(ttk.Frame):
         """
         ttk.Label(self, text=self.header, font=font).pack(pady=10)
 
-    def create_sheet_fields(self, field_width: int = 25) -> None:
+    def create_fields(self, field_width: int = 25) -> None:
         """This method will create the fields for the intake sheet. It
         will read the labels from the intake_labels.txt file and create
         a ttk.Entry widget for each label.

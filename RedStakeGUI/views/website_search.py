@@ -5,6 +5,14 @@ from .base_view import BaseView
 
 
 class WebsiteSearchView(BaseView):
+    """This class will be used to create a website search form for the
+    user to fill out. It will be used to automatically open the parcel
+    websites for the user. Inherits from BaseView.
+
+    Args:
+        BaseView (BaseView): The base view class.
+    """
+
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
@@ -13,7 +21,7 @@ class WebsiteSearchView(BaseView):
 
         self.inputs = {"County": None, "Parcel ID": None}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
-        self.create_sheet_fields(field_width=20)
+        self.create_fields(field_width=20)
 
         self.info_label = self.create_status_info_label()
         self.model = WebsiteSearchModel(self.inputs, self.info_label)

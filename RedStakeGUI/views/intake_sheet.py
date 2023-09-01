@@ -8,7 +8,11 @@ class IntakeSheetView(BaseView):
     """This class will be used to create a land surveying intake sheet
     for the user to fill out. It will be used to gather information
     about the subject property so a quote can be generated. Inherits
-    from ttk.Frame."""
+    from ttk.Frame.
+
+    Args:
+        BaseView (BaseView): The base view class.
+    """
 
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
@@ -18,7 +22,7 @@ class IntakeSheetView(BaseView):
 
         self.inputs = {label: None for label in self.get_input_labels()}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
-        self.create_sheet_fields(field_width=20)
+        self.create_fields(field_width=20)
 
         self.info_label = self.create_status_info_label()
         self.model = IntakeSheetModel(self.inputs, self.info_label)
