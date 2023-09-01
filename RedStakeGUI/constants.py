@@ -48,12 +48,13 @@ def get_email_settings() -> Tuple[str, str, str]:
 if not JSON_SETTINGS_PATH.exists():
     save_email_settings()
 
-SERVER_DIRECTORY = Path("\\server")
+SERVER_DIRECTORY = Path("//server")
 # Off-site Test Directory
 # SERVER_DIRECTORY = os.path.join(ROOT, "TESTserver")
 SERVER_ACCESS_DIRECTORY = SERVER_DIRECTORY / "access"
 QUOTES_DIRECTORY = SERVER_ACCESS_DIRECTORY / "quotes"
-
+QUOTES_DIRECTORY = Path(str(QUOTES_DIRECTORY).replace("\\", "\\\\", 1))
+print(QUOTES_DIRECTORY)
 
 if not QUOTES_DIRECTORY.exists():
     QUOTES_DIRECTORY.mkdir(parents=True)

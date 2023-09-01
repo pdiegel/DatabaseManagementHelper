@@ -65,8 +65,11 @@ class WebsiteSearchModel:
         except IndexError:
             return
 
-        for _, link in parcel_data["LINKS"].items():
-            webbrowser.open(link, new=2, autoraise=True)
+        links_to_open = {"PROPERTY_APPRAISER", "DEED", "MAP", "PLAT", "FEMA"}
+
+        for link_name, link in parcel_data["LINKS"].items():
+            if link_name in links_to_open and link != "":
+                webbrowser.open(link, new=2, autoraise=True)
 
     def get_parcel_data(self, parcel_id: str, county: str) -> dict:
         """Gets the parcel data for the parcel ID number.
