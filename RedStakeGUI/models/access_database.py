@@ -14,7 +14,6 @@ class AccessDB:
         self.connection_string = f"DRIVER={self.DRIVER};DBQ={db_path}"
         self.connection, self.cursor = self.connect_to_database()
         self.all_job_data = self.get_all_job_data()
-        # self.get_geolocation("1510 Pecan Street, Florida")
 
     def connect_to_database(self) -> Tuple[Connection, Cursor]:
         """Attempts to connect to the database.
@@ -98,17 +97,3 @@ class AccessDB:
         df[output_name] = df[input_name1].astype(str) + " " + df[input_name2]
         df.drop(columns=[input_name1, input_name2], inplace=True)
         return df
-
-    def get_geolocation(self, address: str):
-        api_key = "AIzaSyC3QhibxtXfuFT3_sbQN2cYE6TXJkCB0zs"
-        request_url = "https://maps.googleapis.com/maps/api/geocode/\
-json?address={address}&key={api_key}"
-        url = request_url.format(address=address, api_key=api_key)
-        response = requests.get(url)
-        location = response.json()["results"][0]["geometry"]["location"]
-        return location
-
-    # Close the database connection when the object is deleted
-    def __del__(self):
-        self.connection.close()
-        self.cursor.close()
