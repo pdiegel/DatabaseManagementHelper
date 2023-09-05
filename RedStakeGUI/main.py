@@ -45,14 +45,11 @@ class MainApp(ttk.Window):
     def on_tab_change(self, event):
         selected_tab = self.notebook.index(self.notebook.select())
 
-        if selected_tab == 0:
-            self.geometry("500x300")
-        if selected_tab == 1:
-            self.geometry("500x750")
-        elif selected_tab == 2:
-            self.geometry("500x250")
-        elif selected_tab == 3:
-            self.geometry("500x400")
+        # Get the class of the selected tab object
+        notebook_tabs_keys = list(self.notebook_tabs.keys())
+        new_width = notebook_tabs_keys[selected_tab].GEOMETRY[0]
+        new_height = notebook_tabs_keys[selected_tab].GEOMETRY[1]
+        self.geometry(f"{new_width}x{new_height}")
 
 
 if __name__ == "__main__":

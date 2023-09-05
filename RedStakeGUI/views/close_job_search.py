@@ -13,6 +13,8 @@ class CloseJobSearchView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
+    GEOMETRY = (500, 300)
+
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
@@ -25,10 +27,10 @@ class CloseJobSearchView(BaseView):
         self.inputs["Search Type"].current(0)
 
         self.info_label = self.create_status_info_label()
-        self.model = CloseJobSearchModel(self.inputs, self.info_label)
+        self.model = CloseJobSearchModel(self)
 
         self.buttons = {
-            "Search": self.model.search_for_keyword,
+            "Search": self.model.create_search_treeview,
             "Clear": self.model.clear_inputs,
             "Copy Selection": self.model.copy_selected_rows,
         }
