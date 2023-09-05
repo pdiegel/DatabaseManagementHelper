@@ -46,11 +46,13 @@ class MainApp(ttk.Window):
         selected_tab = self.notebook.index(self.notebook.select())
 
         if selected_tab == 0:
-            self.geometry("475x750")
-        elif selected_tab == 1:
-            self.geometry("350x250")
+            self.geometry("500x300")
+        if selected_tab == 1:
+            self.geometry("500x750")
         elif selected_tab == 2:
-            self.geometry("375x400")
+            self.geometry("500x250")
+        elif selected_tab == 3:
+            self.geometry("500x400")
 
 
 if __name__ == "__main__":

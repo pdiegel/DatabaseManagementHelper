@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Tuple
+from .models.access_database import AccessDB
 
 from src.county_data_collectors.county_mapper import DATA_COLLECTOR_MAP
 
@@ -45,16 +46,31 @@ def get_email_settings() -> Tuple[str, str, str]:
     return sender, receiver, password
 
 
+def fix_server_directory_path(path: Path) -> str:
+    """This method will fix the path to the server directory. The
+    server directory path is used to open the quotes on the server.
+
+    Args:
+        path (Path): The path to the quote on the server.
+
+    Returns:
+        Path: The fixed path to the quote on the server.
+    """
+    path = Path(str(path).replace("\\", "\\\\", 1))
+    return path
+
+
 if not JSON_SETTINGS_PATH.exists():
     save_email_settings()
 
-SERVER_DIRECTORY = Path("//server")
+
 # Off-site Test Directory
 # SERVER_DIRECTORY = os.path.join(ROOT, "TESTserver")
+SERVER_DIRECTORY = Path("//server")
+
 SERVER_ACCESS_DIRECTORY = SERVER_DIRECTORY / "access"
 QUOTES_DIRECTORY = SERVER_ACCESS_DIRECTORY / "quotes"
-QUOTES_DIRECTORY = Path(str(QUOTES_DIRECTORY).replace("\\", "\\\\", 1))
-print(QUOTES_DIRECTORY)
+QUOTES_DIRECTORY = fix_server_directory_path(QUOTES_DIRECTORY)
 
 if not QUOTES_DIRECTORY.exists():
     QUOTES_DIRECTORY.mkdir(parents=True)
@@ -63,3 +79,10 @@ if not QUOTES_DIRECTORY.exists():
 INTAKE_LABELS = DATA_DIRECTORY / "intake_labels.txt"
 PARCEL_DATA_MAP = DATA_COLLECTOR_MAP
 PARCEL_DATA_COUNTIES = list(PARCEL_DATA_MAP.keys())
+
+ACCESS_DATABASE_PATH = (
+    SERVER_ACCESS_DIRECTORY / "Database Backup" / "MainDB_be.accdb"
+)
+ACCESS_DATABASE_PATH = fix_server_directory_path(ACCESS_DATABASE_PATH)
+
+ACCESS_DATABASE = AccessDB(ACCESS_DATABASE_PATH)

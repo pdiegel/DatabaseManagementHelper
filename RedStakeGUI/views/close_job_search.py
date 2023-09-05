@@ -21,7 +21,8 @@ class CloseJobSearchView(BaseView):
 
         self.inputs = {"Search Type": None, "Search Keyword": None}
         self.dropdowns = {"Search Type": ("Street Name", "Subdivision Name")}
-        self.create_fields(field_width=20)
+        self.create_fields()
+        self.inputs["Search Type"].current(0)
 
         self.info_label = self.create_status_info_label()
         self.model = CloseJobSearchModel(self.inputs, self.info_label)

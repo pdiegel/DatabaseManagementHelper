@@ -21,7 +21,7 @@ class WebsiteSearchView(BaseView):
 
         self.inputs = {"County": None, "Parcel ID": None}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
-        self.create_fields(field_width=20)
+        self.create_fields()
 
         self.info_label = self.create_status_info_label()
         self.model = WebsiteSearchModel(self.inputs, self.info_label)

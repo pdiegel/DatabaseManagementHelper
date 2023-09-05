@@ -21,7 +21,7 @@ class CADOpenerView(BaseView):
         self.inputs = {
             "File Number": None,
         }
-        self.create_fields(field_width=25)
+        self.create_fields()
 
         self.info_label = self.create_status_info_label()
         self.model = CADOpenerModel(self.inputs, self.info_label)
