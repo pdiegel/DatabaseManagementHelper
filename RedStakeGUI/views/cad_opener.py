@@ -12,6 +12,8 @@ class CADOpenerView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
+    GEOMETRY = (500, 400)
+
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
@@ -21,7 +23,7 @@ class CADOpenerView(BaseView):
         self.inputs = {
             "File Number": None,
         }
-        self.create_fields(field_width=25)
+        self.create_fields()
 
         self.info_label = self.create_status_info_label()
         self.model = CADOpenerModel(self.inputs, self.info_label)
@@ -35,4 +37,3 @@ class CADOpenerView(BaseView):
         self.create_buttons()
 
         self.model.late_initialize()
-        print(self.inputs)

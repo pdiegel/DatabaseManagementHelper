@@ -7,6 +7,7 @@ from .constants import MAIN_TITLE
 from .views.intake_sheet import IntakeSheetView
 from .views.website_search import WebsiteSearchView
 from .views.cad_opener import CADOpenerView
+from .views.close_job_search import CloseJobSearchView
 
 
 class MainApp(ttk.Window):
@@ -18,6 +19,7 @@ class MainApp(ttk.Window):
         super().__init__()
         self.title(MAIN_TITLE)
         self.notebook_tabs = {
+            CloseJobSearchView: "Close Job Search",
             IntakeSheetView: "Intake Sheet",
             WebsiteSearchView: "Website Search",
             CADOpenerView: "CAD Opener",
@@ -43,12 +45,11 @@ class MainApp(ttk.Window):
     def on_tab_change(self, event):
         selected_tab = self.notebook.index(self.notebook.select())
 
-        if selected_tab == 0:
-            self.geometry("475x750")
-        elif selected_tab == 1:
-            self.geometry("350x250")
-        elif selected_tab == 2:
-            self.geometry("375x400")
+        # Get the class of the selected tab object
+        notebook_tabs_keys = list(self.notebook_tabs.keys())
+        new_width = notebook_tabs_keys[selected_tab].GEOMETRY[0]
+        new_height = notebook_tabs_keys[selected_tab].GEOMETRY[1]
+        self.geometry(f"{new_width}x{new_height}")
 
 
 if __name__ == "__main__":
