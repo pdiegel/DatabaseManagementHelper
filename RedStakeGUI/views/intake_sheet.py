@@ -2,6 +2,7 @@ import ttkbootstrap as ttk
 from RedStakeGUI.constants import INTAKE_LABELS, PARCEL_DATA_COUNTIES
 from RedStakeGUI.models.intake_sheet import IntakeSheetModel
 from RedStakeGUI.views.base_view import BaseView
+import logging
 
 
 class IntakeSheetView(BaseView):
@@ -50,8 +51,13 @@ class IntakeSheetView(BaseView):
             with open(INTAKE_LABELS, "r") as file:
                 labels = [line.strip() for line in file]
         except FileNotFoundError:
-            labels = []
-        return labels
+            logging.error(f"File {INTAKE_LABELS} was not found.")
+        except PermissionError:
+            logging.error(f"Permission denied to open {INTAKE_LABELS}.")
+        except Exception as e:
+            logging.error(f"Error reading {INTAKE_LABELS}: {e}")
+        else:
+            return labels
 
 
 if __name__ == "__main__":

@@ -4,7 +4,9 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from RedStakeGUI.constants import get_email_settings
+
+from RedStakeGUI.constants import ENV_PATH
+from RedStakeGUI.models.settings_manager import SettingsManager
 
 
 class QuoteEmail:
@@ -14,7 +16,9 @@ class QuoteEmail:
         self.inputs = inputs
         self.parcel_data = parcel_data
         self.quote_file_path = quote_file_path
-        self.sender, self.receiver, self.password = get_email_settings()
+        self.sender, self.receiver, self.password = SettingsManager(
+            ENV_PATH
+        ).get_email_settings()
         self.subject = self.create_subject()
         self.message = self.create_message()
 

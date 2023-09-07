@@ -1,54 +1,57 @@
-import json
+import os
 from pathlib import Path
-from typing import Tuple
-from RedStakeGUI.models.access_database import AccessDB
-
+import logging
+from dotenv import load_dotenv
 from src.county_data_collectors.county_mapper import DATA_COLLECTOR_MAP
 
+from RedStakeGUI.models.access_database import AccessDB
+from RedStakeGUI.models.encryption_manager import EncryptionManager
+from RedStakeGUI.models.settings_manager import SettingsManager
+import base64
+
 MAIN_TITLE = "Red Stake Surveyors, Inc."
+
 ROOT = Path(__file__).parent
 DATA_DIRECTORY = ROOT / "data"
-JSON_SETTINGS_PATH = DATA_DIRECTORY / "settings.json"
+ENV_PATH = DATA_DIRECTORY / ".env"
+ENV_VARIABLES = (
+    "SENDER_EMAIL_ADDRESS",
+    "SENDER_EMAIL_PASSWORD",
+    "RECIPIENT_EMAIL_ADDRESS",
+    "ENCRYPTION_KEY",
+)
+
+if not ENV_PATH.exists():
+    with open(ENV_PATH, "w") as file:
+        for variable in ENV_VARIABLES:
+            file.write(f"{variable}=\n")
+        logging.info("Created .env file with empty variables.")
 
 
-def save_email_settings(
-    sender: str = "", password: str = "", receiver: str = ""
-) -> None:
-    with open(JSON_SETTINGS_PATH, "w") as file:
-        settings = {
-            "sender_email_address": sender,
-            "sender_email_password": password,
-            "receiever_email_address": receiver,
-        }
-        json.dump(settings, file)
+load_dotenv(ENV_PATH)
 
 
-def get_email_settings() -> Tuple[str, str, str]:
-    """This method will return the email settings from the
-    settings.json file.
+encryption_key_string = os.getenv("ENCRYPTION_KEY")
+print(f"Type of key: {type(encryption_key_string)}")
+print(f"Key being used: {encryption_key_string}")
+ENCRYPTION_MANAGER = EncryptionManager(encryption_key_string)
 
-    Returns:
-        Tuple[str, str, str]: The sender email address, receiver
-            email address, and sender email password.
-    """
-    # Error handling for corrupted settings file
-    try:
-        with open(JSON_SETTINGS_PATH, "r") as file:
-            settings = json.load(file)
-    except json.decoder.JSONDecodeError:
-        save_email_settings()
-        with open(JSON_SETTINGS_PATH, "r") as file:
-            settings = json.load(file)
 
-    sender = settings.get("sender_email_address", "")
-    receiver = settings.get("receiever_email_address", "")
-    password = settings.get("sender_email_password", "")
-    return sender, receiver, password
+print(f"Type of key2: {type(ENCRYPTION_MANAGER.key)}")
+print(f"Key being used2: {ENCRYPTION_MANAGER.key}")
+ENCRYPTION_KEY = base64.urlsafe_b64decode(ENCRYPTION_MANAGER.key).decode()
+
+SETTINGS_MANAGER = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
+SETTINGS_MANAGER.update_env_file("ENCRYPTION_KEY", ENCRYPTION_KEY)
 
 
 def fix_server_directory_path(path: Path) -> str:
-    """This method will fix the path to the server directory. The
-    server directory path is used to open the quotes on the server.
+    """This method will fix the path to the server directory.
+    The server directory path is used to open the quotes on the server.
+
+    By default, the Path object is replacing the network double slash
+    with a single slash. This method will replace the single slash
+    with a double slash.
 
     Args:
         path (Path): The path to the quote on the server.
@@ -58,10 +61,6 @@ def fix_server_directory_path(path: Path) -> str:
     """
     path = Path(str(path).replace("\\", "\\\\", 1))
     return path
-
-
-if not JSON_SETTINGS_PATH.exists():
-    save_email_settings()
 
 
 # Off-site Test Directory

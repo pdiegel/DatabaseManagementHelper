@@ -14,9 +14,9 @@ class BaseView(ttk.Frame):
         header: str = None,
         **kwargs,
     ):
-        """This class will be used as the base view class for all the
-        other views. It will contain methods that will be used by all
-        the other views. Inherits from ttk.Frame.
+        """This class is the base view class for all the
+        other views. It contains generic methods that can be used by
+        all the views. Inherits from ttk.Frame.
 
         Args:
             master (ttk.Notebook, optional): The root window.

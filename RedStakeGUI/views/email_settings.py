@@ -1,6 +1,7 @@
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import get_email_settings, save_email_settings
+from RedStakeGUI.models.settings_manager import SettingsManager
+from RedStakeGUI.constants import ENV_PATH, ENCRYPTION_MANAGER
 
 
 class EmailSettings(ttk.Toplevel):
@@ -9,7 +10,7 @@ class EmailSettings(ttk.Toplevel):
 
     INFO_LABEL_CODES = {
         1: "Settings saved successfully.",
-        2: "Settings not saved. Please try again.",
+        2: "Error: {error}. Please try again.",
         3: "Please enter all fields.",
     }
 
@@ -18,12 +19,18 @@ class EmailSettings(ttk.Toplevel):
         self.model = model
         self.title("Email Settings")
         self.resizable(False, False)
-        self.sender, self.receiver, self.password = get_email_settings()
+        self.settings_manager = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
+        (
+            self.sender,
+            self.receiver,
+            self.password,
+        ) = self.settings_manager.get_email_settings()
         self.inputs = {
             "Sender Email Address": self.sender,
             "Sender Password": self.password,
             "Receiver Email Address": self.receiver,
         }
+        print(self.inputs)
         self.buttons = {
             "Save": self.save_email_settings,
             "Cancel": self.destroy,
@@ -53,28 +60,28 @@ class EmailSettings(ttk.Toplevel):
 
     def save_email_settings(self) -> None:
         """Saves the email settings to the settings file."""
-        if self.inputs["Sender Email Address"].get() == "":
-            self.update_info_label(3)
-            return
+        fields_to_check = (
+            "Sender Email Address",
+            "Sender Password",
+            "Receiver Email Address",
+        )
 
-        if self.inputs["Sender Password"].get() == "":
-            self.update_info_label(3)
-            return
-
-        if self.inputs["Receiver Email Address"].get() == "":
-            self.update_info_label(3)
-            return
+        for field in fields_to_check:
+            if self.inputs[field].get().strip() == "":
+                self.update_info_label(3)
+                return
 
         sender = self.inputs["Sender Email Address"].get()
         sender_password = self.inputs["Sender Password"].get()
         receiver = self.inputs["Receiver Email Address"].get()
 
         try:
-            save_email_settings(sender, sender_password, receiver)
+            self.settings_manager.save_email_settings(
+                sender, sender_password, receiver
+            )
             self.update_info_label(1)
         except Exception as e:
-            self.update_info_label(2)
-            print(e)
+            self.update_info_label(2, error=e)
 
     def update_info_label(self, code: int, **kwargs) -> None:
         """Updates the info label with the text from the
