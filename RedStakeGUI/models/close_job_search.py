@@ -1,5 +1,5 @@
 import ttkbootstrap as ttk
-from ..constants import ACCESS_DATABASE
+from RedStakeGUI.constants import ACCESS_DATABASE
 from thefuzz import process, fuzz
 import pyperclip
 

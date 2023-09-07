@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Tuple
-from .models.access_database import AccessDB
+from RedStakeGUI.models.access_database import AccessDB
 
 from src.county_data_collectors.county_mapper import DATA_COLLECTOR_MAP
 

@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
-from ..models.cad_opener import CADOpenerModel
-from .base_view import BaseView
+from RedStakeGUI.models.cad_opener import CADOpenerModel
+from RedStakeGUI.views.base_view import BaseView
 
 
 class CADOpenerView(BaseView):

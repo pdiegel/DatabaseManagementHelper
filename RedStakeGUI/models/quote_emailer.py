@@ -4,7 +4,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from ..constants import get_email_settings
+from RedStakeGUI.constants import get_email_settings
 
 
 class QuoteEmail:

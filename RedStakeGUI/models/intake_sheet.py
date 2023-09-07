@@ -2,10 +2,10 @@ import smtplib
 
 import ttkbootstrap as ttk
 
-from ..constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
-from ..views.email_settings import EmailSettings
-from .data_collection import DataCollector
-from .quote_emailer import QuoteEmail
+from RedStakeGUI.constants import PARCEL_DATA_COUNTIES, QUOTES_DIRECTORY
+from RedStakeGUI.views.email_settings import EmailSettings
+from RedStakeGUI.models.data_collection import DataCollector
+from RedStakeGUI.models.quote_emailer import QuoteEmail
 import os
 
 

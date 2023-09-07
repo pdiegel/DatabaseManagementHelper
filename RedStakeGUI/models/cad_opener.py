@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 from tkinter import Listbox
-from ..models.dwg_file_opener import DWGFiles
+from RedStakeGUI.models.dwg_file_opener import DWGFiles
 
 
 class CADOpenerModel:

@@ -3,11 +3,11 @@ import logging
 import sv_ttk
 import ttkbootstrap as ttk
 
-from .constants import MAIN_TITLE
-from .views.intake_sheet import IntakeSheetView
-from .views.website_search import WebsiteSearchView
-from .views.cad_opener import CADOpenerView
-from .views.close_job_search import CloseJobSearchView
+from RedStakeGUI.constants import MAIN_TITLE
+from RedStakeGUI.views.intake_sheet import IntakeSheetView
+from RedStakeGUI.views.website_search import WebsiteSearchView
+from RedStakeGUI.views.cad_opener import CADOpenerView
+from RedStakeGUI.views.close_job_search import CloseJobSearchView
 
 
 class MainApp(ttk.Window):

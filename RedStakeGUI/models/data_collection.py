@@ -1,4 +1,4 @@
-from ..constants import PARCEL_DATA_MAP
+from RedStakeGUI.constants import PARCEL_DATA_MAP
 from src.county_data_collectors.base_collector import BaseParcelDataCollector
 import logging
 

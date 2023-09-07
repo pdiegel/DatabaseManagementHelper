@@ -2,8 +2,8 @@ import webbrowser
 
 import ttkbootstrap as ttk
 
-from ..constants import PARCEL_DATA_COUNTIES
-from .data_collection import DataCollector
+from RedStakeGUI.constants import PARCEL_DATA_COUNTIES
+from RedStakeGUI.models.data_collection import DataCollector
 
 
 class WebsiteSearchModel:

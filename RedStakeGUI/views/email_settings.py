@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 
-from ..constants import get_email_settings, save_email_settings
+from RedStakeGUI.constants import get_email_settings, save_email_settings
 
 
 class EmailSettings(ttk.Toplevel):

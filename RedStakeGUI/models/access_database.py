@@ -2,7 +2,6 @@ import pyodbc
 from typing import Tuple
 from pyodbc import Connection, Cursor
 import pandas as pd
-import requests
 
 
 class AccessDB:

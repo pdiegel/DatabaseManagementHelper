@@ -1,0 +1,1 @@
+pyinstaller --add-data "RedStakeGUI/data/*.txt;RedStakeGUI/data" --add-data "RedStakeGUI/data/*.json;RedStakeGUI/data" --collect-data sv_ttk --hidden-import=pyarrow.vendored.version --hidden-import=sv_ttk RedStakeGUI/main.py

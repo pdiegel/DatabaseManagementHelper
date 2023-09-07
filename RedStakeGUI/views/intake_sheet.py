@@ -1,7 +1,7 @@
 import ttkbootstrap as ttk
-from ..constants import INTAKE_LABELS, PARCEL_DATA_COUNTIES
-from ..models.intake_sheet import IntakeSheetModel
-from .base_view import BaseView
+from RedStakeGUI.constants import INTAKE_LABELS, PARCEL_DATA_COUNTIES
+from RedStakeGUI.models.intake_sheet import IntakeSheetModel
+from RedStakeGUI.views.base_view import BaseView
 
 
 class IntakeSheetView(BaseView):

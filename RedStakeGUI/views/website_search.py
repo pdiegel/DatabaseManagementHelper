@@ -1,7 +1,7 @@
 import ttkbootstrap as ttk
-from ..models.website_search import WebsiteSearchModel
-from ..constants import PARCEL_DATA_COUNTIES
-from .base_view import BaseView
+from RedStakeGUI.models.website_search import WebsiteSearchModel
+from RedStakeGUI.constants import PARCEL_DATA_COUNTIES
+from RedStakeGUI.views.base_view import BaseView
 
 
 class WebsiteSearchView(BaseView):

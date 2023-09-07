@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
-from ..models.close_job_search import CloseJobSearchModel
-from .base_view import BaseView
+from RedStakeGUI.models.close_job_search import CloseJobSearchModel
+from RedStakeGUI.views.base_view import BaseView
 
 
 class CloseJobSearchView(BaseView):
