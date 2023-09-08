@@ -31,17 +31,21 @@ class SettingsManager:
             recipient_email (str): The recipient email address.
         """
         # Encrypt the password
-        print(f"Encrypting password: {sender_password}")
+        logging.debug(f"Encrypting password on save: {sender_password}")
         encrypted_password = self.encryption_manager.encrypt(sender_password)
-        print(f"Encrypted password: {encrypted_password}")
+        logging.debug(f"Encrypted password on save: {encrypted_password}")
 
         variables = {
             "SENDER_EMAIL_ADDRESS": sender_email,
-            "SENDER_EMAIL_PASSWORD": encrypted_password,
+            "SENDER_EMAIL_PASSWORD": encrypted_password.decode(),
             "RECIPIENT_EMAIL_ADDRESS": recipient_email,
         }
         for variable, value in variables.items():
-            self.update_env_file(variable, value)
+            try:
+                logging.debug(f"Updating {variable} to {value}")
+                self.update_env_file(variable, value)
+            except Exception as e:
+                logging.error(f"Error updating {variable} on save: {e}")
 
     def get_email_settings(self) -> Tuple[str, str, str]:
         """Returns the email environmental variables.

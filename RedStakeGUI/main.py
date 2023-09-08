@@ -3,7 +3,7 @@ import logging
 import sv_ttk
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import MAIN_TITLE
+from RedStakeGUI.constants import MAIN_TITLE, LOG_FILE_PATH
 from RedStakeGUI.views.intake_sheet import IntakeSheetView
 from RedStakeGUI.views.website_search import WebsiteSearchView
 from RedStakeGUI.views.cad_opener import CADOpenerView
@@ -53,6 +53,6 @@ class MainApp(ttk.Window):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename="gui.log", level=logging.INFO)
+    logging.basicConfig(filename=LOG_FILE_PATH, level=logging.INFO)
     app = MainApp()
     app.mainloop()

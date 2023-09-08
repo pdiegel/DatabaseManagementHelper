@@ -7,11 +7,11 @@ from src.county_data_collectors.county_mapper import DATA_COLLECTOR_MAP
 from RedStakeGUI.models.access_database import AccessDB
 from RedStakeGUI.models.encryption_manager import EncryptionManager
 from RedStakeGUI.models.settings_manager import SettingsManager
-import base64
 
 MAIN_TITLE = "Red Stake Surveyors, Inc."
 
 ROOT = Path(__file__).parent
+LOG_FILE_PATH = ROOT / "gui.log"
 DATA_DIRECTORY = ROOT / "data"
 ENV_PATH = DATA_DIRECTORY / ".env"
 ENV_VARIABLES = (
@@ -32,15 +32,8 @@ load_dotenv(ENV_PATH)
 
 
 encryption_key_string = os.getenv("ENCRYPTION_KEY")
-print(f"Type of key: {type(encryption_key_string)}")
-print(f"Key being used: {encryption_key_string}")
 ENCRYPTION_MANAGER = EncryptionManager(encryption_key_string)
-
-
-print(f"Type of key2: {type(ENCRYPTION_MANAGER.key)}")
-print(f"Key being used2: {ENCRYPTION_MANAGER.key}")
-ENCRYPTION_KEY = base64.urlsafe_b64decode(ENCRYPTION_MANAGER.key).decode()
-
+ENCRYPTION_KEY = ENCRYPTION_MANAGER.key.decode()
 SETTINGS_MANAGER = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
 SETTINGS_MANAGER.update_env_file("ENCRYPTION_KEY", ENCRYPTION_KEY)
 
