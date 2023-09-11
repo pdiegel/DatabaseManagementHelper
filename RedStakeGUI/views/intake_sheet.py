@@ -15,7 +15,7 @@ class IntakeSheetView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
-    GEOMETRY = (500, 750)
+    GEOMETRY = (450, 700)
 
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()

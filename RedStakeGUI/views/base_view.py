@@ -75,7 +75,7 @@ class BaseView(ttk.Frame):
                 self.create_dropdown_field(label, field_width)
                 continue
             if self.datefields is not None and label in self.datefields:
-                self.create_date_field(label, field_width)
+                self.create_date_field(label)
                 continue
             self.create_label_entry_field(label, field_width)
 
@@ -113,7 +113,7 @@ class BaseView(ttk.Frame):
         self.inputs[label] = ttk.Combobox(
             dropdown_row,
             values=self.dropdowns[label],
-            width=field_width - 4 if field_width > 4 else 5,
+            width=field_width - 2 if field_width > 4 else 5,
         )
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         dropdown_row.pack(expand=True, fill="x", padx=10, pady=5)
@@ -133,7 +133,7 @@ class BaseView(ttk.Frame):
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         label_row.pack(expand=True, fill="x", padx=10, pady=5)
 
-    def create_date_field(self, label: str, field_width: int) -> None:
+    def create_date_field(self, label: str) -> None:
         """Creates a label and date field for the view.
 
         Args:
@@ -144,21 +144,23 @@ class BaseView(ttk.Frame):
         ttk.Label(date_row, text=f"{label.strip()}:").pack(
             side="left", anchor="w"
         )
-        self.inputs[label] = ttk.DateEntry(
-            date_row,
-            width=field_width - 4 if field_width > 4 else 5,
-        )
+
+        self.inputs[label] = ttk.DateEntry(date_row)
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         date_row.pack(expand=True, fill="x", padx=10, pady=5)
 
-    def create_listbox(self, widget_identifier: str = "ListBox") -> None:
+    def create_listbox(
+        self, widget_identifier: str = "ListBox", height: int = 5
+    ) -> None:
         """Creates a listbox widget for the view.
 
         Args:
             widget_identifier (str, optional): The identifier for the
                 widget. Defaults to "ListBox".
+            height (int, optional): The height of the listbox. Defaults
+                to 5.
         """
-        self.inputs[widget_identifier] = Listbox(self)
+        self.inputs[widget_identifier] = Listbox(self, height=height)
         self.inputs[widget_identifier].pack(
             expand=True, fill="both", padx=10, pady=5
         )

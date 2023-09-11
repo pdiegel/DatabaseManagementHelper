@@ -1,6 +1,7 @@
 import ttkbootstrap as ttk
 from RedStakeGUI.views.base_view import BaseView
 from RedStakeGUI.constants import PARCEL_DATA_COUNTIES
+from RedStakeGUI.models.file_entry import FileEntryModel
 
 
 class FileEntryView(BaseView):
@@ -11,7 +12,7 @@ class FileEntryView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
-    GEOMETRY = (500, 400)
+    GEOMETRY = (450, 700)
 
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
@@ -29,6 +30,9 @@ class FileEntryView(BaseView):
             "Entry By": None,
             "Fieldwork Crew": None,
             "Inhouse Assigned To": None,
+            "Requested Services": None,
+            "Contact Information": None,
+            "Additional Information": None,
         }
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
         self.datefields = ["Job Date", "Fieldwork Date", "Inhouse Date"]
@@ -36,15 +40,13 @@ class FileEntryView(BaseView):
 
         self.info_label = self.create_status_info_label()
 
+        self.model = FileEntryModel(
+            inputs=self.inputs, info_label=self.info_label
+        )
         self.buttons = {
             "Submit": self.model.submit_job_data,
             "Generate FN": self.model.generate_fn,
             "Gather Contacts": self.model.gather_job_data,
             "Clear": self.model.clear_inputs,
         }
-        self.create_listbox("Requested Services")
-        self.create_listbox("Contact Information")
-        self.create_listbox("Additional Information")
         self.create_buttons()
-
-        self.model.late_initialize()

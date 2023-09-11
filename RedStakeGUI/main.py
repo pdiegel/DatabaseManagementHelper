@@ -1,6 +1,4 @@
 import logging
-
-import sv_ttk
 import ttkbootstrap as ttk
 
 from RedStakeGUI.constants import MAIN_TITLE, LOG_FILE_PATH
@@ -29,8 +27,6 @@ class MainApp(ttk.Window):
         self.notebook = self.create_notebook()
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
         self.resizable(False, False)
-
-        sv_ttk.set_theme("light")
 
     def create_notebook(self) -> ttk.Notebook:
         """Creates a ttk.Notebook widget and adds it to the main window.
