@@ -8,6 +8,7 @@ from RedStakeGUI.views.intake_sheet import IntakeSheetView
 from RedStakeGUI.views.website_search import WebsiteSearchView
 from RedStakeGUI.views.cad_opener import CADOpenerView
 from RedStakeGUI.views.close_job_search import CloseJobSearchView
+from RedStakeGUI.views.file_entry import FileEntryView
 
 
 class MainApp(ttk.Window):
@@ -23,6 +24,7 @@ class MainApp(ttk.Window):
             IntakeSheetView: "Intake Sheet",
             WebsiteSearchView: "Website Search",
             CADOpenerView: "CAD Opener",
+            FileEntryView: "File Entry",
         }
         self.notebook = self.create_notebook()
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
