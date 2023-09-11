@@ -1,6 +1,7 @@
-import ttkbootstrap as ttk
-from typing import Dict, List, Callable
 from tkinter import Listbox
+from typing import Callable, Dict, List
+
+import ttkbootstrap as ttk
 
 
 class BaseView(ttk.Frame):
