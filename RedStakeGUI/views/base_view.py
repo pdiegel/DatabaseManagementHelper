@@ -9,6 +9,7 @@ class BaseView(ttk.Frame):
         master: ttk.Notebook = None,
         inputs: Dict[str, None] = None,
         dropdowns: Dict[str, List[str]] = None,
+        datefields: List[str] = None,
         buttons: Dict[str, Callable] = None,
         model: object = None,
         header: str = None,
@@ -28,6 +29,8 @@ class BaseView(ttk.Frame):
             dropdowns (Dict[str, List[str]], optional): A dictionary
                 containing the dropdown labels as keys and a list of
                 dropdown values as values. Defaults to None.
+            datefields (List[str], optional): A list of datefield
+                labels. Defaults to None.
             buttons (Dict[str, Callable], optional): A dictionary
                 containing the button labels as keys and callable
                 functions as values. Defaults to None.
@@ -40,6 +43,7 @@ class BaseView(ttk.Frame):
         self.master = master
         self.inputs = inputs
         self.dropdowns = dropdowns
+        self.datefields = datefields
         self.buttons = buttons
 
         if model:
@@ -67,11 +71,11 @@ class BaseView(ttk.Frame):
                 Defaults to 25.
         """
         for label in self.inputs:
-            if self.dropdowns is None:
-                self.create_label_entry_field(label, field_width)
-                continue
-            if label in self.dropdowns:
+            if self.dropdowns is not None and label in self.dropdowns:
                 self.create_dropdown_field(label, field_width)
+                continue
+            if self.datefields is not None and label in self.datefields:
+                self.create_date_field(label, field_width)
                 continue
             self.create_label_entry_field(label, field_width)
 
@@ -128,6 +132,24 @@ class BaseView(ttk.Frame):
         self.inputs[label] = ttk.Entry(label_row, width=field_width)
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         label_row.pack(expand=True, fill="x", padx=10, pady=5)
+
+    def create_date_field(self, label: str, field_width: int) -> None:
+        """Creates a label and date field for the view.
+
+        Args:
+            label (str): The label for the date field.
+            field_width (int): The width of the date field.
+        """
+        date_row = ttk.Frame(self)
+        ttk.Label(date_row, text=f"{label.strip()}:").pack(
+            side="left", anchor="w"
+        )
+        self.inputs[label] = ttk.DateEntry(
+            date_row,
+            width=field_width - 4 if field_width > 4 else 5,
+        )
+        self.inputs[label].pack(side="left", expand=True, anchor="e")
+        date_row.pack(expand=True, fill="x", padx=10, pady=5)
 
     def create_listbox(self, widget_identifier: str = "ListBox") -> None:
         """Creates a listbox widget for the view.
