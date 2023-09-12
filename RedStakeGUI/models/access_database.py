@@ -266,7 +266,6 @@ class AccessDB:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
     db = AccessDB("\\\\server\\access\\Database Backup\\MainDB_be.accdb")
     table = Table("Existing Jobs", Table.EXISTING_JOBS_SCHEMA)
     table.set_data("Job Number", "12345")

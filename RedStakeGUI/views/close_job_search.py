@@ -18,12 +18,12 @@ class CloseJobSearchView(BaseView):
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
-        self.header = "Close Job Search"
-        self.create_header()
+        self.create_header("Close Job Search")
 
         self.inputs = {"Search Type": None, "Search Keyword": None}
-        self.dropdowns = {"Search Type": ("Street Name", "Subdivision Name")}
-        self.create_fields(30)
+        self.dropdowns = {"Search Type": ["Street Name", "Subdivision Name"]}
+        self.create_fields()
+
         self.inputs["Search Type"].current(0)
 
         self.info_label = self.create_status_info_label()

@@ -18,8 +18,7 @@ class WebsiteSearchView(BaseView):
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
-        self.header = "Website Search"
-        self.create_header()
+        self.create_header("Website Search")
 
         self.inputs = {"County": None, "Parcel ID": None}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}

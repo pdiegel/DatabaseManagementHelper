@@ -17,13 +17,12 @@ class CADOpenerView(BaseView):
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
-        self.header = "CAD File Opener"
-        self.create_header()
+        self.create_header("CAD File Opener")
 
         self.inputs = {
             "File Number": None,
         }
-        self.create_label_entry_field("File Number")
+        self.create_fields()
 
         self.info_label = self.create_status_info_label()
         self.model = CADOpenerModel(self.inputs, self.info_label)

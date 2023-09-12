@@ -1,12 +1,14 @@
 import logging
+from tkinter import Event
+
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import MAIN_TITLE, LOG_FILE_PATH
-from RedStakeGUI.views.intake_sheet import IntakeSheetView
-from RedStakeGUI.views.website_search import WebsiteSearchView
+from RedStakeGUI.constants import LOG_FILE_PATH, MAIN_TITLE
 from RedStakeGUI.views.cad_opener import CADOpenerView
 from RedStakeGUI.views.close_job_search import CloseJobSearchView
 from RedStakeGUI.views.file_entry import FileEntryView
+from RedStakeGUI.views.intake_sheet import IntakeSheetView
+from RedStakeGUI.views.website_search import WebsiteSearchView
 
 
 class MainApp(ttk.Window):
@@ -17,40 +19,55 @@ class MainApp(ttk.Window):
     def __init__(self):
         super().__init__()
         self.title(MAIN_TITLE)
+        self.notebook = ttk.Notebook(self)
+
+        logging.info("Creating notebook tabs.")
         self.notebook_tabs = {
-            CloseJobSearchView: "Close Job Search",
-            IntakeSheetView: "Intake Sheet",
-            WebsiteSearchView: "Website Search",
-            CADOpenerView: "CAD Opener",
-            FileEntryView: "File Entry",
+            "Close Job Search": CloseJobSearchView(self.notebook),
+            "File Entry": FileEntryView(self.notebook),
+            "Intake Sheet": IntakeSheetView(self.notebook),
+            "Website Search": WebsiteSearchView(self.notebook),
+            "CAD Opener": CADOpenerView(self.notebook),
         }
-        self.notebook = self.create_notebook()
+        logging.info("Notebook tabs created.")
+
+        logging.info("Adding tabs to notebook.")
+        for label, frame in self.notebook_tabs.items():
+            self.notebook.add(frame, text=label)
+            logging.info(f"Added {label} tab to notebook.")
+        logging.info("Tabs added to notebook.")
+
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
-        self.resizable(False, False)
+        logging.info("Notebook tab change event bound.")
+        self.notebook.pack(fill="both", expand=True)
+        logging.info("Notebook packed.")
 
-    def create_notebook(self) -> ttk.Notebook:
-        """Creates a ttk.Notebook widget and adds it to the main window.
+    def on_tab_change(self, _event: Event) -> None:
+        """Resizes the window to fit the selected tab. This is done
+        because the window is created before the widgets are created,
+        so the window is not the correct size until the widgets are
+        created.
 
-        Returns:
-            ttk.Notebook: The ttk.Notebook widget.
+        Args:
+            _event (Event): The event that triggered this function.
+                Not used.
         """
-        notebook = ttk.Notebook(self)
-        for tab_class, tab_label in self.notebook_tabs.items():
-            notebook.insert("end", tab_class(notebook), text=tab_label)
-        notebook.pack(expand=True, fill="both")
-        return notebook
+        logging.info("Resizing window to fit selected tab.")
+        self.update_idletasks()
 
-    def on_tab_change(self, event):
-        selected_tab = self.notebook.index(self.notebook.select())
+        selected_tab_index = self.notebook.index(self.notebook.select())
+        selected_tab_object = self.notebook_tabs[
+            self.notebook.tab(selected_tab_index, "text")
+        ]
 
-        # Get the class of the selected tab object
-        notebook_tabs_keys = list(self.notebook_tabs.keys())
-        new_width = notebook_tabs_keys[selected_tab].GEOMETRY[0]
-        new_height = notebook_tabs_keys[selected_tab].GEOMETRY[1]
-        self.geometry(f"{new_width}x{new_height}")
+        required_window_width = selected_tab_object.winfo_reqwidth() + 50
+        required_window_height = selected_tab_object.winfo_reqheight() + 50
+        new_geometry = f"{required_window_width}x{required_window_height}"
+        self.geometry(new_geometry)
+        logging.info(f"Window resized to {new_geometry}.")
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename=LOG_FILE_PATH, level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
     app = MainApp()
     app.mainloop()

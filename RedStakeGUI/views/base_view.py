@@ -46,13 +46,20 @@ class BaseView(ttk.Frame):
         self.master = master
         self.inputs = inputs
         self.dropdowns = dropdowns
+        if not self.dropdowns:
+            self.dropdowns = {}
+
         self.datefields = datefields
+        if not self.datefields:
+            self.datefields = []
+
         self.buttons = buttons
 
         if model:
             self.model = model(**kwargs)
         else:
             self.model = None
+
         self.header = header
 
         self.pack()
@@ -74,32 +81,33 @@ class BaseView(ttk.Frame):
         for button_label, button_function in self.buttons.items():
             self.create_widget(
                 "Button", row_frame, text=button_label, command=button_function
-            ).pack(side="left", padx=5, pady=5)
+            ).pack(side="left", padx=5)
 
-        row_frame.pack(expand=True, fill="x", pady=5)
+        row_frame.pack(expand=True, fill="x", pady=5, padx=5)
 
     def create_dropdown_field(
-        self, label: str, width: int = 23, **kwargs
+        self, label: str, values: List[str], width: int = 23, **kwargs
     ) -> None:
         """Creates a dropdown menu for the view.
 
         Args:
             label (str): The label for the dropdown menu.
+            values (List[str]): The values for the dropdown menu.
             width (int): The width of the dropdown menu. Defaults to 23.
         """
         row_frame = ttk.Frame(self)
-        self.create_widget("Label", row_frame, text=f"{label.strip()}:").pack(
-            side="left", anchor="w"
-        )
+        self.create_widget(
+            "Label", row_frame, text=f"{label.strip()}:", width=23
+        ).pack(side="left", padx=10)
 
         self.inputs[label] = self.create_widget(
-            "Combobox", row_frame, width=width, **kwargs
+            "Combobox", row_frame, width=width, values=values, **kwargs
         )
-        self.inputs[label].pack(side="left", anchor="e")
-        row_frame.pack(fill="x", padx=10, pady=5)
+        self.inputs[label].pack(side="left", padx=10, expand=True, fill="x")
+        row_frame.pack(padx=30, pady=5, fill="x")
 
     def create_label_entry_field(
-        self, label: str, width: int = 25, **kwargs
+        self, label: str, width: int = 23, **kwargs
     ) -> None:
         """Creates a label and entry field for the view.
 
@@ -108,15 +116,17 @@ class BaseView(ttk.Frame):
             width (int): The width of the entry field. Defaults to 25.
         """
         row_frame = ttk.Frame(self)
-        self.create_widget("Label", row_frame, text=f"{label.strip()}:").pack(
-            side="left", anchor="w"
-        )
+        self.create_widget(
+            "Label", row_frame, text=f"{label.strip()}:", width=23
+        ).pack(side="left", padx=10, anchor="w")
 
         self.inputs[label] = self.create_widget(
             "Entry", row_frame, width=width, **kwargs
         )
-        self.inputs[label].pack(side="left", anchor="e")
-        row_frame.pack(fill="x", padx=5, pady=5)
+        self.inputs[label].pack(
+            side="left", padx=10, expand=True, fill="x", anchor="e"
+        )
+        row_frame.pack(padx=30, pady=5, fill="x")
 
     def create_date_field(self, label: str, **kwargs) -> None:
         """Creates a label and date field for the view.
@@ -125,15 +135,17 @@ class BaseView(ttk.Frame):
             label (str): The label for the date field.
         """
         row_frame = ttk.Frame(self)
-        self.create_widget("Label", row_frame, text=f"{label.strip()}:").pack(
-            side="left", anchor="w"
-        )
+        self.create_widget(
+            "Label", row_frame, text=f"{label.strip()}:", width=23
+        ).pack(side="left", padx=10, anchor="w")
 
         self.inputs[label] = self.create_widget(
             "DateEntry", row_frame, **kwargs
         )
-        self.inputs[label].pack(side="left", anchor="e")
-        row_frame.pack(fill="x", padx=10, pady=5)
+        self.inputs[label].pack(
+            side="left", padx=10, expand=True, fill="x", anchor="e"
+        )
+        row_frame.pack(padx=30, pady=5, fill="x")
 
     def create_listbox(
         self,
@@ -158,9 +170,14 @@ class BaseView(ttk.Frame):
         )
         self.inputs[label].pack(expand=True, fill="both", padx=10, pady=5)
 
+    def create_header(self, text: str):
+        self.create_widget(
+            "Label", self, text=text, font=self.HEADER_FONT
+        ).pack(pady=15)
+
     def create_widget(
         self, widget_type: str, parent_frame: ttk.Frame, **kwargs
-    ) -> ttk.Widget:
+    ):
         """Creates a widget based on the widget type. The widget type
         can be one of the following: Label, Entry, Button, Combobox,
         DateEntry, Listbox.
@@ -192,15 +209,16 @@ class BaseView(ttk.Frame):
         else:
             raise ValueError(f"Unknown widget type: {widget_type}")
 
-    def create_field(
-        self, label: str, field_type: str, field_width: int = 25, **kwargs
-    ):
-        row_frame = ttk.Frame(self)
-        ttk.Label(row_frame, text=f"{label.strip()}:").pack(
-            side="left", anchor="w"
-        )
-        self.inputs[label] = self.create_widget(
-            field_type, row_frame, width=field_width, **kwargs
-        )
-        self.inputs[label].pack(side="left", expand=True, anchor="e")
-        row_frame.pack(expand=True, fill="x", padx=10, pady=5)
+    def create_fields(self, **kwargs):
+        """Creates the fields for the view.
+
+        Args:
+            fields (List[str]): A list of the field names.
+        """
+        for field in self.inputs.keys():
+            if field in self.dropdowns:
+                self.create_dropdown_field(field, self.dropdowns[field])
+            elif field in self.datefields:
+                self.create_date_field(field)
+            else:
+                self.create_label_entry_field(field, **kwargs)

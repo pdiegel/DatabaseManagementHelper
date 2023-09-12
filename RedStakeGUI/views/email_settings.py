@@ -30,7 +30,6 @@ class EmailSettings(ttk.Toplevel):
             "Sender Password": self.password,
             "Receiver Email Address": self.receiver,
         }
-        print(self.inputs)
         self.buttons = {
             "Save": self.save_email_settings,
             "Cancel": self.destroy,

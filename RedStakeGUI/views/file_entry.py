@@ -17,8 +17,7 @@ class FileEntryView(BaseView):
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
-        self.header = "File Entry"
-        self.create_header()
+        self.create_header("File Entry")
 
         self.inputs = {
             "Job Date": None,
@@ -34,8 +33,8 @@ class FileEntryView(BaseView):
             "Contact Information": None,
             "Additional Information": None,
         }
-        self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
         self.datefields = ["Job Date", "Fieldwork Date", "Inhouse Date"]
+        self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
         self.create_fields()
 
         self.info_label = self.create_status_info_label()

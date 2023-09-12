@@ -20,11 +20,11 @@ class IntakeSheetView(BaseView):
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
         self.master = master
-        self.header = "Intake Sheet"
-        self.create_header()
+        self.create_header("Intake Sheet")
 
         self.inputs = {label: None for label in self.get_input_labels()}
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
+
         self.create_fields()
 
         self.info_label = self.create_status_info_label()
