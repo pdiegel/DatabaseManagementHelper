@@ -2,7 +2,7 @@ import logging
 
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import ACCESS_DATABASE_PATH
+from RedStakeGUI.constants import ACCESS_DATABASE
 from RedStakeGUI.models.access_database import AccessDB, Table
 from RedStakeGUI.models.data_collection import DataCollector
 from RedStakeGUI.models.job_number_storage import JobNumberStorage
@@ -34,7 +34,7 @@ class FileEntryModel:
     def __init__(self, inputs: dict, info_label: ttk.Label):
         self.inputs = inputs
         self.info_label = info_label
-        self.access_db = AccessDB(ACCESS_DATABASE_PATH)
+        self.access_db = ACCESS_DATABASE
         self.job_number_storage = JobNumberStorage(self.access_db.cursor)
 
     def submit_job_data(self) -> None:
