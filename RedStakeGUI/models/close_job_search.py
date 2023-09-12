@@ -21,7 +21,6 @@ class CloseJobSearchModel:
         self.inputs = view.inputs
         self.info_label = view.info_label
         self.view_frame = view
-        self.initial_geometry = self.view_frame.GEOMETRY
         self.tree = None
         self.tree_scrollbar = None
 
@@ -176,7 +175,7 @@ class CloseJobSearchModel:
 
         self.tree_scrollbar = scrollbar
         self.tree = tree
-        self.update_view_geometry(600, 500)
+        self.update_view_geometry()
 
     def clear_inputs(self) -> None:
         """Clears all the input fields. Ignore the search type field."""
@@ -196,16 +195,16 @@ class CloseJobSearchModel:
         if self.tree:
             self.tree.destroy()
             self.tree_scrollbar.destroy()
-        self.update_view_geometry(*self.initial_geometry)
+        self.update_view_geometry()
 
-    def update_view_geometry(self, width: int, height: int) -> None:
+    def update_view_geometry(self) -> None:
         """Updates the view geometry.
 
         Args:
             width (int): The width of the view.
             height (int): The height of the view.
         """
-        self.view_frame.master.master.geometry(f"{width}x{height}")
+        self.view_frame.master.master.on_tab_change(None)
 
     def update_info_label(self, code: int, **kwargs) -> None:
         """Updates the info label with the text from the

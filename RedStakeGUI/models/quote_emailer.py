@@ -1,3 +1,4 @@
+import logging
 import smtplib
 from email import encoders
 from email.mime.base import MIMEBase
@@ -5,8 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 
-from RedStakeGUI.constants import ENV_PATH
-from RedStakeGUI.models.settings_manager import SettingsManager
+from RedStakeGUI.constants import SETTINGS_MANAGER
 
 
 class QuoteEmail:
@@ -16,9 +16,11 @@ class QuoteEmail:
         self.inputs = inputs
         self.parcel_data = parcel_data
         self.quote_file_path = quote_file_path
-        self.sender, self.receiver, self.password = SettingsManager(
-            ENV_PATH
-        ).get_email_settings()
+        (
+            self.sender,
+            self.receiver,
+            self.password,
+        ) = SETTINGS_MANAGER.get_email_settings()
         self.subject = self.create_subject()
         self.message = self.create_message()
 
@@ -108,5 +110,18 @@ Thank you"""
         text = msg.as_string()
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
-            smtp_server.login(self.sender, self.password)
-            smtp_server.sendmail(self.sender, self.receiver, text)
+            try:
+                logging.info("Logging into Gmail.")
+                logging.info(f"Sender: {self.sender}")
+                logging.info(f"Receiver: {self.receiver}")
+                smtp_server.login(self.sender, self.password.decode())
+            except smtplib.SMTPAuthenticationError:
+                logging.error("Failed to log into Gmail.")
+                return
+
+            try:
+                smtp_server.sendmail(self.sender, self.receiver, text)
+                logging.info("Successfully sent email.")
+            except smtplib.SMTPRecipientsRefused:
+                logging.error("Failed to send email.")
+                return

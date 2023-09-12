@@ -54,11 +54,12 @@ class SettingsManager:
             Tuple[str, str, str]: The sender email address, recipient
                 email address, and sender email password.
         """
-        # Error handling for corrupted settings file
         sender_email = os.getenv("SENDER_EMAIL_ADDRESS")
         recipient_email = os.getenv("RECIPIENT_EMAIL_ADDRESS")
         encrypted_password = os.getenv("SENDER_EMAIL_PASSWORD")
         password = ""
+
+        # Error handling for corrupted settings file
         try:
             password = self.encryption_manager.decrypt(encrypted_password)
         except Exception as e:

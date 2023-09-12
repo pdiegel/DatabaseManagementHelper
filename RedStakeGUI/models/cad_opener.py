@@ -1,5 +1,7 @@
+from tkinter import Event, Listbox
+
 import ttkbootstrap as ttk
-from tkinter import Listbox
+
 from RedStakeGUI.models.dwg_file_opener import DWGFiles
 
 
@@ -81,26 +83,20 @@ class CADOpenerModel:
         """
         listbox_widget.delete(0, "end")
 
-    def late_initialize(self) -> None:
-        """Late initialization of the model. This method is called after
-        the view is initialized."""
-        self.inputs["File Number"].bind("<Return>", self.search_on_enter)
-        self.inputs["ListBox"].bind("<Return>", self.open_on_enter)
-
-    def search_on_enter(self, _: object = None) -> None:
+    def search_on_enter(self, _event: Event = None) -> None:
         """Event handler for when the user presses the enter key in the
         search field.
 
         Args:
-            _ (object): The event object.
+            _event (Event): The event object. Not used.
         """
         self.display_cad_files()
 
-    def open_on_enter(self, _: object = None) -> None:
+    def open_on_enter(self, _event: Event = None) -> None:
         """Event handler for when the user presses the enter key in the
         listbox field.
 
         Args:
-            _ (object): The event object.
+            _event (Event): The event object. Not used.
         """
         self.open_selected_file()
