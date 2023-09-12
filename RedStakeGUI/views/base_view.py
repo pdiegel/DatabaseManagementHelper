@@ -134,21 +134,22 @@ class BaseView(ttk.Frame):
         self.inputs[label].pack(side="left", expand=True, anchor="e")
         label_row.pack(expand=True, fill="x", padx=10, pady=5)
 
-    def create_date_field(self, label: str) -> None:
+    def create_date_field(self, label: str, **kwargs) -> None:
         """Creates a label and date field for the view.
 
         Args:
             label (str): The label for the date field.
-            field_width (int): The width of the date field.
         """
-        date_row = ttk.Frame(self)
-        ttk.Label(date_row, text=f"{label.strip()}:").pack(
+        row_frame = ttk.Frame(self)
+        ttk.Label(row_frame, text=f"{label.strip()}:").pack(
             side="left", anchor="w"
         )
 
-        self.inputs[label] = ttk.DateEntry(date_row)
+        self.inputs[label] = self.create_widget(
+            "DateEntry", row_frame, **kwargs
+        )
         self.inputs[label].pack(side="left", expand=True, anchor="e")
-        date_row.pack(expand=True, fill="x", padx=10, pady=5)
+        row_frame.pack(expand=True, fill="x", padx=10, pady=5)
 
     def create_listbox(
         self, widget_identifier: str = "ListBox", height: int = 5
@@ -165,3 +166,35 @@ class BaseView(ttk.Frame):
         self.inputs[widget_identifier].pack(
             expand=True, fill="both", padx=10, pady=5
         )
+
+    def create_widget(
+        self, widget_type: str, parent_frame: ttk.Frame, **kwargs
+    ):
+        if widget_type == "Label":
+            return ttk.Label(parent_frame, **kwargs)
+        elif widget_type == "Entry":
+            return ttk.Entry(parent_frame, **kwargs)
+        elif widget_type == "Button":
+            return ttk.Button(parent_frame, **kwargs)
+        elif widget_type == "Combobox":
+            kwargs["width"] = kwargs.get("width", 25) - 2
+            return ttk.Combobox(parent_frame, **kwargs)
+        elif widget_type == "DateEntry":
+            return ttk.DateEntry(parent_frame, **kwargs)
+        elif widget_type == "Listbox":
+            return Listbox(parent_frame, **kwargs)
+        else:
+            raise ValueError(f"Unknown widget type: {widget_type}")
+
+    def create_field(
+        self, label: str, field_type: str, field_width: int = 25, **kwargs
+    ):
+        row_frame = ttk.Frame(self)
+        ttk.Label(row_frame, text=f"{label.strip()}:").pack(
+            side="left", anchor="w"
+        )
+        self.inputs[label] = self.create_widget(
+            field_type, row_frame, width=field_width, **kwargs
+        )
+        self.inputs[label].pack(side="left", expand=True, anchor="e")
+        row_frame.pack(expand=True, fill="x", padx=10, pady=5)
