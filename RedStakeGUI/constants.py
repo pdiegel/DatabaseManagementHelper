@@ -13,12 +13,14 @@ from RedStakeGUI.models.settings_manager import SettingsManager
 MAIN_TITLE = "Red Stake Surveyors, Inc."
 
 # --- Paths and Directories ---
+logging.info("Setting up paths and directories.")
 ROOT = Path(__file__).parent
 DATA_DIRECTORY = ROOT / "data"
 SERVER_DIRECTORY = Path("//server")
 SERVER_ACCESS_DIRECTORY = SERVER_DIRECTORY / "access"
 LOG_FILE_PATH = ROOT / "gui.log"
 ENV_PATH = DATA_DIRECTORY / ".env"
+
 
 # --- Environment Variables ---
 ENV_VARIABLES = (
@@ -38,24 +40,39 @@ def load_env_vars() -> None:
             for variable in ENV_VARIABLES:
                 file.write(f"{variable}=\n")
             logging.info("Created .env file with empty variables.")
-    load_dotenv(ENV_PATH)
+    # Override is set to True so that the environment variables can be
+    # overwritten by the .env file if they already exist.
+    load_dotenv(ENV_PATH, override=True)
 
 
 try:
     load_env_vars()
+    logging.info("Successfully loaded environment variables.")
 except Exception as e:
     logging.error(f"Failed to load environment variables: {e}")
 
 
 # --- Encryption and Settings ---
+logging.info("Setting up encryption and settings.")
+
+
 def get_encryption_manager() -> EncryptionManager:
     encryption_key_string = os.getenv("ENCRYPTION_KEY")
     return EncryptionManager(encryption_key_string)
 
 
-ENCRYPTION_MANAGER = get_encryption_manager()
-ENCRYPTION_KEY = ENCRYPTION_MANAGER.key.decode()
+try:
+    ENCRYPTION_MANAGER = get_encryption_manager()
+    logging.info("Successfully set up encryption manager.")
+except Exception as e:
+    logging.error(f"Failed to set up encryption manager: {e}")
+    ENCRYPTION_KEY = None
+else:
+    ENCRYPTION_KEY = ENCRYPTION_MANAGER.key.decode()
+    logging.info("Successfully decoded encryption key.")
+
 SETTINGS_MANAGER = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
+logging.info("Successfully set up settings manager.")
 
 
 # --- Utility Functions ---

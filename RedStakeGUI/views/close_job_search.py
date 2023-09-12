@@ -1,4 +1,5 @@
 import ttkbootstrap as ttk
+
 from RedStakeGUI.models.close_job_search import CloseJobSearchModel
 from RedStakeGUI.views.base_view import BaseView
 
@@ -13,22 +14,29 @@ class CloseJobSearchView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
-    GEOMETRY = (450, 250)
-
     def __init__(self, master: ttk.Notebook = None):
-        super().__init__()
-        self.master = master
+        super().__init__(master)
         self.create_header("Close Job Search")
 
+        # Input values will be populated in the create_fields method.
         self.inputs = {"Search Type": None, "Search Keyword": None}
+
+        # Dropdown values are used to determine if an input field should
+        # be a dropdown or a text field.
         self.dropdowns = {"Search Type": ["Street Name", "Subdivision Name"]}
         self.create_fields()
 
+        # Sets the default value for the dropdown to 'Street Name'.
         self.inputs["Search Type"].current(0)
 
+        # Used to display any info or error messages to the user.
         self.info_label = self.create_status_info_label()
+
+        # Contains the backend logic for the view.
         self.model = CloseJobSearchModel(self)
 
+        # Keys are the button labels and values are the functions to be
+        # executed when the button is clicked.
         self.buttons = {
             "Search": self.model.create_search_treeview,
             "Clear": self.model.clear_inputs,

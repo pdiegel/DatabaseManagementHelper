@@ -1,4 +1,4 @@
-from tkinter import Listbox
+from tkinter import Listbox, Widget
 from typing import Callable, Dict, List
 
 import ttkbootstrap as ttk
@@ -61,7 +61,6 @@ class BaseView(ttk.Frame):
             self.model = None
 
         self.header = header
-
         self.pack()
 
     def create_status_info_label(self) -> ttk.Label:
@@ -75,7 +74,12 @@ class BaseView(ttk.Frame):
         return info_label
 
     def create_buttons(self) -> None:
-        """Creates the buttons for the view."""
+        """Creates the buttons for the view. The buttons are created
+        based on the buttons dictionary.
+
+        The keys are the button labels
+        and the values are the button commands/functions.
+        """
         row_frame = ttk.Frame(self)
 
         for button_label, button_function in self.buttons.items():
@@ -113,7 +117,7 @@ class BaseView(ttk.Frame):
 
         Args:
             label (str): The label for the entry field.
-            width (int): The width of the entry field. Defaults to 25.
+            width (int): The width of the entry field. Defaults to 23.
         """
         row_frame = ttk.Frame(self)
         self.create_widget(
@@ -157,10 +161,12 @@ class BaseView(ttk.Frame):
         """Creates a listbox widget for the view.
 
         Args:
-            label (str, optional): The label for the listbox. Defaults to
-                "ListBox".
+            label (str, optional): The label for the listbox. Defaults
+                to "ListBox".
             height (int, optional): The height of the listbox. Defaults
                 to 5.
+            header_text (str, optional): The header text for the
+                listbox. Defaults to "".
         """
         if header_text:
             self.create_widget("Label", self, text=header_text).pack()
@@ -170,14 +176,20 @@ class BaseView(ttk.Frame):
         )
         self.inputs[label].pack(expand=True, fill="both", padx=10, pady=5)
 
-    def create_header(self, text: str):
+    def create_header(self, text: str) -> None:
+        """Creates a header for the view. The header is a label with
+        bold text.
+
+        Args:
+            text (str): The text for the header.
+        """
         self.create_widget(
             "Label", self, text=text, font=self.HEADER_FONT
         ).pack(pady=15)
 
     def create_widget(
         self, widget_type: str, parent_frame: ttk.Frame, **kwargs
-    ):
+    ) -> Widget:
         """Creates a widget based on the widget type. The widget type
         can be one of the following: Label, Entry, Button, Combobox,
         DateEntry, Listbox.
@@ -191,7 +203,7 @@ class BaseView(ttk.Frame):
                 Label, Entry, Button, Combobox, DateEntry, Listbox.
 
         Returns:
-            ttk.Widget: The widget object.
+            Widget: The widget object.
         """
         if widget_type == "Label":
             return ttk.Label(parent_frame, **kwargs)
@@ -209,12 +221,8 @@ class BaseView(ttk.Frame):
         else:
             raise ValueError(f"Unknown widget type: {widget_type}")
 
-    def create_fields(self, **kwargs):
-        """Creates the fields for the view.
-
-        Args:
-            fields (List[str]): A list of the field names.
-        """
+    def create_fields(self, **kwargs) -> None:
+        """Creates the fields for the view."""
         for field in self.inputs.keys():
             if field in self.dropdowns:
                 self.create_dropdown_field(field, self.dropdowns[field])

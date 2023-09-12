@@ -1,7 +1,6 @@
 import ttkbootstrap as ttk
 
-from RedStakeGUI.models.settings_manager import SettingsManager
-from RedStakeGUI.constants import ENV_PATH, ENCRYPTION_MANAGER
+from RedStakeGUI.constants import SETTINGS_MANAGER, load_env_vars
 
 
 class EmailSettings(ttk.Toplevel):
@@ -19,17 +18,22 @@ class EmailSettings(ttk.Toplevel):
         self.model = model
         self.title("Email Settings")
         self.resizable(False, False)
-        self.settings_manager = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
+        self.settings_manager = SETTINGS_MANAGER
+        load_env_vars()
         (
             self.sender,
             self.receiver,
             self.password,
         ) = self.settings_manager.get_email_settings()
+
+        # Input values will be populated in the create_window_content method.
+        # Keys are the input labels and values are the current settings.
         self.inputs = {
             "Sender Email Address": self.sender,
             "Sender Password": self.password,
             "Receiver Email Address": self.receiver,
         }
+
         self.buttons = {
             "Save": self.save_email_settings,
             "Cancel": self.destroy,
@@ -37,7 +41,7 @@ class EmailSettings(ttk.Toplevel):
 
         self.create_window_content()
 
-    def create_window_content(self):
+    def create_window_content(self) -> None:
         """Creates the content for the email settings window."""
         for text, current_setting in self.inputs.items():
             row_frame = ttk.Frame(self)
@@ -59,6 +63,7 @@ class EmailSettings(ttk.Toplevel):
 
     def save_email_settings(self) -> None:
         """Saves the email settings to the settings file."""
+
         fields_to_check = (
             "Sender Email Address",
             "Sender Password",
@@ -67,6 +72,7 @@ class EmailSettings(ttk.Toplevel):
 
         for field in fields_to_check:
             if self.inputs[field].get().strip() == "":
+                # Empty field found. Display error message and return.
                 self.update_info_label(3)
                 return
 
@@ -78,8 +84,10 @@ class EmailSettings(ttk.Toplevel):
             self.settings_manager.save_email_settings(
                 sender, sender_password, receiver
             )
+            # Update the model with the new settings.
             self.update_info_label(1)
         except Exception as e:
+            # Error saving settings. Display error message and return.
             self.update_info_label(2, error=e)
 
     def update_info_label(self, code: int, **kwargs) -> None:
@@ -89,19 +97,13 @@ class EmailSettings(ttk.Toplevel):
         Args:
             code (int): The code for the text to be displayed in the
                 info label.
-            **kwargs: The format keyword arguments for the text to be
-                displayed in the info label.
-
+            **kwargs: The format arguments.
         """
         text = self.INFO_LABEL_CODES[code].format(**kwargs)
         self.info_label.config(text=text)
 
     def destroy(self) -> None:
-        """Destroys the email settings window.
-
-        Returns:
-
-        """
+        """Destroys the email settings window."""
         self.model.reset_settings_window()
         return super().destroy()
 
