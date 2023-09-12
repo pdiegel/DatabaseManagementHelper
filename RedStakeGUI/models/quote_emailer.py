@@ -30,9 +30,18 @@ class QuoteEmail:
         Returns:
             str: The subject for the email.
         """
-        subject_suffix = " - (Survey Quote Request)"
+        subject_prefix = ""
+        file_number = self.inputs["Red Stake File Number"].get().strip()
+        address = self.parcel_data.get("PRIMARY_ADDRESS", "")
+        if file_number and address[0].isnumeric():
+            subject_prefix = f"FN {file_number} #"
+        elif file_number:
+            subject_prefix = f"FN {file_number} "
+
         subject = self.parcel_data.get("PRIMARY_ADDRESS", "")
-        return subject + subject_suffix
+        subject_suffix = " - (Survey Quote Request)"
+
+        return (subject_prefix + subject + subject_suffix).strip()
 
     def create_message(self) -> str:
         """This method will create the message for the email.
@@ -41,48 +50,45 @@ class QuoteEmail:
             str: The message for the email.
         """
         address = self.parcel_data.get("PRIMARY_ADDRESS", "")
-        scope_of_work = self.inputs.get("Scope of Work", "").get().strip()
-        additional_info = (
-            self.inputs.get("Additional Information", "").get().strip()
-        )
+        parcel_id = self.parcel_data.get("PARCEL_ID", "")
+        scope_of_work = self.inputs["Scope of Work"].get().strip()
+        additional_info = self.inputs["Additional Information"].get().strip()
+        parcel_links = self.parcel_data.get("LINKS", "")
+
+        appraiser = parcel_links.get("PROPERTY_APPRAISER", "")
+        appraiser_map = parcel_links.get("MAP", "")
+        deed = parcel_links.get("DEED", "")
+        file_number = self.inputs["Red Stake File Number"].get().strip()
+
         if additional_info:
             additional_info = "\nAdditional Info = " + additional_info
 
-        parcel_links = self.parcel_data.get("LINKS", "")
-        appraiser = parcel_links.get("PROPERTY_APPRAISER", "")
-
-        appraiser_map = parcel_links.get("MAP", "")
         if appraiser_map:
             appraiser_map = "\nMap = " + appraiser_map
 
-        deed = parcel_links.get("DEED", "")
         if deed:
             deed = "\nDeed = " + deed
 
-        plat = parcel_links.get("PLAT", "")
-        if plat:
-            plat = "\nPlat = " + plat
+        if file_number:
+            file_number = f"File Number = {file_number}\n"
 
-        message = """Hello,
+        plat = ""
+        if self.parcel_data.get("PLAT_BOOK"):
+            plat = "\nPlat = " + parcel_links.get("PLAT", "")
+
+        message = f"""Hello,
 
 See attached files for supporting data on this quote.
 
-Address = {address}
+{file_number}Address = {address}
+Parcel ID = {parcel_id}
 Requested services = {scope_of_work}{additional_info}
 
 Property Appraiser = {appraiser}{appraiser_map}{deed}{plat}
 
 Thank you"""
 
-        return message.format(
-            address=address,
-            scope_of_work=scope_of_work,
-            additional_info=additional_info,
-            appraiser=appraiser,
-            appraiser_map=appraiser_map,
-            deed=deed,
-            plat=plat,
-        )
+        return message
 
     def send_email(self) -> None:
         """This method will send the email with the quote attached."""

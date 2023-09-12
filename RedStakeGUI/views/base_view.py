@@ -63,6 +63,17 @@ class BaseView(ttk.Frame):
         self.header = header
         self.pack()
 
+    def create_header(self, text: str) -> None:
+        """Creates a header for the view. The header is a label with
+        bold text.
+
+        Args:
+            text (str): The text for the header.
+        """
+        self.create_widget(
+            "Label", self, text=text, font=self.HEADER_FONT
+        ).pack(pady=15)
+
     def create_status_info_label(self) -> ttk.Label:
         """Creates a label to display status information to the user.
 
@@ -72,6 +83,16 @@ class BaseView(ttk.Frame):
         info_label = self.create_widget("Label", self)
         info_label.pack(pady=5, anchor="center")
         return info_label
+
+    def create_fields(self, **kwargs) -> None:
+        """Creates the fields for the view."""
+        for field in self.inputs.keys():
+            if field in self.dropdowns:
+                self.create_dropdown_field(field, self.dropdowns[field])
+            elif field in self.datefields:
+                self.create_date_field(field)
+            else:
+                self.create_label_entry_field(field, **kwargs)
 
     def create_buttons(self) -> None:
         """Creates the buttons for the view. The buttons are created
@@ -89,26 +110,39 @@ class BaseView(ttk.Frame):
 
         row_frame.pack(expand=True, fill="x", pady=5, padx=5)
 
-    def create_dropdown_field(
-        self, label: str, values: List[str], width: int = 23, **kwargs
-    ) -> None:
-        """Creates a dropdown menu for the view.
+    def create_widget(
+        self, widget_type: str, parent_frame: ttk.Frame, **kwargs
+    ) -> Widget:
+        """Creates a widget based on the widget type. The widget type
+        can be one of the following: Label, Entry, Button, Combobox,
+        DateEntry, Listbox.
 
         Args:
-            label (str): The label for the dropdown menu.
-            values (List[str]): The values for the dropdown menu.
-            width (int): The width of the dropdown menu. Defaults to 23.
-        """
-        row_frame = ttk.Frame(self)
-        self.create_widget(
-            "Label", row_frame, text=f"{label.strip()}:", width=23
-        ).pack(side="left", padx=10)
+            widget_type (str): The type of widget to create.
+            parent_frame (ttk.Frame): The parent frame for the widget.
 
-        self.inputs[label] = self.create_widget(
-            "Combobox", row_frame, width=width, values=values, **kwargs
-        )
-        self.inputs[label].pack(side="left", padx=10, expand=True, fill="x")
-        row_frame.pack(padx=30, pady=5, fill="x")
+        Raises:
+            ValueError: If the widget type is not one of the following:
+                Label, Entry, Button, Combobox, DateEntry, Listbox.
+
+        Returns:
+            Widget: The widget object.
+        """
+        if widget_type == "Label":
+            return ttk.Label(parent_frame, **kwargs)
+        elif widget_type == "Entry":
+            return ttk.Entry(parent_frame, **kwargs)
+        elif widget_type == "Button":
+            return ttk.Button(parent_frame, **kwargs)
+        elif widget_type == "Combobox":
+            kwargs["width"] = kwargs.get("width", 25) - 2
+            return ttk.Combobox(parent_frame, **kwargs)
+        elif widget_type == "DateEntry":
+            return ttk.DateEntry(parent_frame, **kwargs)
+        elif widget_type == "Listbox":
+            return Listbox(parent_frame, **kwargs)
+        else:
+            raise ValueError(f"Unknown widget type: {widget_type}")
 
     def create_label_entry_field(
         self, label: str, width: int = 23, **kwargs
@@ -130,6 +164,27 @@ class BaseView(ttk.Frame):
         self.inputs[label].pack(
             side="left", padx=10, expand=True, fill="x", anchor="e"
         )
+        row_frame.pack(padx=30, pady=5, fill="x")
+
+    def create_dropdown_field(
+        self, label: str, values: List[str], width: int = 23, **kwargs
+    ) -> None:
+        """Creates a dropdown menu for the view.
+
+        Args:
+            label (str): The label for the dropdown menu.
+            values (List[str]): The values for the dropdown menu.
+            width (int): The width of the dropdown menu. Defaults to 23.
+        """
+        row_frame = ttk.Frame(self)
+        self.create_widget(
+            "Label", row_frame, text=f"{label.strip()}:", width=23
+        ).pack(side="left", padx=10)
+
+        self.inputs[label] = self.create_widget(
+            "Combobox", row_frame, width=width, values=values, **kwargs
+        )
+        self.inputs[label].pack(side="left", padx=10, expand=True, fill="x")
         row_frame.pack(padx=30, pady=5, fill="x")
 
     def create_date_field(self, label: str, **kwargs) -> None:
@@ -175,58 +230,3 @@ class BaseView(ttk.Frame):
             "Listbox", self, height=height, **kwargs
         )
         self.inputs[label].pack(expand=True, fill="both", padx=10, pady=5)
-
-    def create_header(self, text: str) -> None:
-        """Creates a header for the view. The header is a label with
-        bold text.
-
-        Args:
-            text (str): The text for the header.
-        """
-        self.create_widget(
-            "Label", self, text=text, font=self.HEADER_FONT
-        ).pack(pady=15)
-
-    def create_widget(
-        self, widget_type: str, parent_frame: ttk.Frame, **kwargs
-    ) -> Widget:
-        """Creates a widget based on the widget type. The widget type
-        can be one of the following: Label, Entry, Button, Combobox,
-        DateEntry, Listbox.
-
-        Args:
-            widget_type (str): The type of widget to create.
-            parent_frame (ttk.Frame): The parent frame for the widget.
-
-        Raises:
-            ValueError: If the widget type is not one of the following:
-                Label, Entry, Button, Combobox, DateEntry, Listbox.
-
-        Returns:
-            Widget: The widget object.
-        """
-        if widget_type == "Label":
-            return ttk.Label(parent_frame, **kwargs)
-        elif widget_type == "Entry":
-            return ttk.Entry(parent_frame, **kwargs)
-        elif widget_type == "Button":
-            return ttk.Button(parent_frame, **kwargs)
-        elif widget_type == "Combobox":
-            kwargs["width"] = kwargs.get("width", 25) - 2
-            return ttk.Combobox(parent_frame, **kwargs)
-        elif widget_type == "DateEntry":
-            return ttk.DateEntry(parent_frame, **kwargs)
-        elif widget_type == "Listbox":
-            return Listbox(parent_frame, **kwargs)
-        else:
-            raise ValueError(f"Unknown widget type: {widget_type}")
-
-    def create_fields(self, **kwargs) -> None:
-        """Creates the fields for the view."""
-        for field in self.inputs.keys():
-            if field in self.dropdowns:
-                self.create_dropdown_field(field, self.dropdowns[field])
-            elif field in self.datefields:
-                self.create_date_field(field)
-            else:
-                self.create_label_entry_field(field, **kwargs)
