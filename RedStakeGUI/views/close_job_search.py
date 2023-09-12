@@ -13,7 +13,7 @@ class CloseJobSearchView(BaseView):
         BaseView (BaseView): The base view class.
     """
 
-    GEOMETRY = (500, 300)
+    GEOMETRY = (450, 250)
 
     def __init__(self, master: ttk.Notebook = None):
         super().__init__()
@@ -23,7 +23,7 @@ class CloseJobSearchView(BaseView):
 
         self.inputs = {"Search Type": None, "Search Keyword": None}
         self.dropdowns = {"Search Type": ("Street Name", "Subdivision Name")}
-        self.create_fields()
+        self.create_fields(30)
         self.inputs["Search Type"].current(0)
 
         self.info_label = self.create_status_info_label()
