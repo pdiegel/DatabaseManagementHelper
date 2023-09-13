@@ -1,7 +1,12 @@
-import ttkbootstrap as ttk
-from RedStakeGUI.constants import ACCESS_DATABASE
-from thefuzz import process, fuzz
+import logging
+import re
+from typing import Tuple
+
 import pyperclip
+import ttkbootstrap as ttk
+from thefuzz import fuzz
+
+from RedStakeGUI.constants import ACCESS_DATABASE
 
 
 class CloseJobSearchModel:
@@ -45,21 +50,21 @@ class CloseJobSearchModel:
         else:
             choices = jobs_df["Subdivision"]
 
-        results = process.extract(
-            search_keyword, choices, limit=500, scorer=fuzz.WRatio
-        )
-
-        filtered_results = [result[0] for result in results if result[1] > 80]
+        # Get the choices that have a fuzzy score of 60 or better
+        fuzzy_scores = [
+            choice
+            for choice in choices
+            if self.weighted_fuzzy_score(search_keyword.upper(), choice.upper())
+            >= 70
+        ]
 
         # Get the corresponding rows in the DataFrame
         if search_type == "Street Name":
             matched_rows = jobs_df[
-                jobs_df["Property Address"].isin(filtered_results)
+                jobs_df["Property Address"].isin(fuzzy_scores)
             ]
         else:
-            matched_rows = jobs_df[
-                jobs_df["Subdivision"].isin(filtered_results)
-            ]
+            matched_rows = jobs_df[jobs_df["Subdivision"].isin(fuzzy_scores)]
 
         # Remove duplicates
         matched_rows = matched_rows.drop_duplicates()
@@ -67,6 +72,97 @@ class CloseJobSearchModel:
 
         # Convert the DataFrame to a list of dictionaries
         return matched_rows.to_dict("records")
+
+    def weighted_fuzzy_score(
+        self,
+        search_key: str,
+        target_key: str,
+        weights: Tuple[float, float, float] = (0.2, 0.7, 0.1),
+    ) -> int:
+        """Calculates the weighted fuzzy score for the search key and
+        target key. The weights are used to determine how much each
+        component of the fuzzy score is worth. Street name in this case
+        is worth 70% of the fuzzy score, house number is worth 20% and
+        street type is worth 10%.
+
+        Args:
+            search_key (str): The search key.
+            target_key (str): The target key.
+            weights (Tuple[float, float, float], optional): The weights
+                for the fuzzy score. Defaults to (0.2, 0.7, 0.1).
+
+        Returns:
+            int: The weighted fuzzy score.
+        """
+        # Tokenize the search and target addresses
+        search_tokens = self.tokenize_address(search_key)
+        target_tokens = self.tokenize_address(target_key)
+
+        if search_tokens == ("", "", "") or target_tokens == ("", "", ""):
+            return 0
+
+        # Make sure both have the same number of tokens
+        # (you might want more robust handling here)
+        if len(search_tokens) != len(target_tokens):
+            return 0
+
+        # Calculate individual fuzzy scores for each token
+        token_scores = [
+            fuzz.ratio(search_tokens[i], target_tokens[i])
+            for i in range(len(search_tokens))
+        ]
+
+        # Calculate the weighted score
+        weighted_score = sum(
+            token_scores[i] * weights[i] for i in range(len(token_scores))
+        )
+        weighted_score /= sum(weights)
+
+        return weighted_score
+
+    def tokenize_address(self, address: str) -> Tuple[str, str, str]:
+        """Tokenizes the address into street name, house number and
+        street type.
+
+        Args:
+            address (str): The address to tokenize.
+
+        Returns:
+            Tuple[str, str, str]: The street name, house number and
+                street type.
+        """
+
+        match = re.match(r"(\d*)\s*(.*?)(?=\s*\w*\s*$)(\s+\w+\s*)?$", address)
+        if not match:
+            return "", "", ""
+
+        house_number, street_name, street_type = match.groups()
+
+        symbols_to_remove = ("#", "(", ")", "-", ".", ",", ":", ";", "'")
+        for symbol in symbols_to_remove:
+            street_name = street_name.replace(symbol, "")
+
+        # Handle common abbreviations
+        street_type_abbr = {
+            "STREET": "ST",
+            "AVENUE": "AVE",
+            "ROAD": "RD",
+            "DRIVE": "DR",
+            "COURT": "CT",
+            "LANE": "LN",
+            "CIRCLE": "CIR",
+            "BOULEVARD": "BLVD",
+            "TERRACE": "TER",
+            "PLACE": "PL",
+        }
+
+        if street_type:
+            for key, value in street_type_abbr.items():
+                street_type = street_type.upper().replace(key, value)
+        else:
+            street_type = ""
+
+        return house_number, street_name, street_type
 
     def copy_selected_rows(self) -> None:
         """Copies the selected rows from the treeview widget to the

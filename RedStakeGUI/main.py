@@ -3,7 +3,7 @@ from tkinter import Event
 
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import LOG_FILE_PATH, MAIN_TITLE
+from RedStakeGUI.constants import MAIN_TITLE
 from RedStakeGUI.views.cad_opener import CADOpenerView
 from RedStakeGUI.views.close_job_search import CloseJobSearchView
 from RedStakeGUI.views.file_entry import FileEntryView
@@ -68,6 +68,13 @@ class MainApp(ttk.Window):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%m/%d/%Y %H:%M",
+        force=True,
+    )
+    logging.info("Starting RedStakeGUI.")
+    print(logging.getLogger(__name__))
     app = MainApp()
     app.mainloop()
