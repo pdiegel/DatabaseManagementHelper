@@ -57,7 +57,7 @@ class CloseJobSearchModel:
             if self.weighted_fuzzy_score(
                 search_keyword.upper(), choice.upper(), search_type
             )
-            >= 60
+            >= 70
         ]
 
         # Get the corresponding rows in the DataFrame
@@ -80,7 +80,7 @@ class CloseJobSearchModel:
         search_key: str,
         target_key: str,
         search_type: str,
-        weights: Tuple[float, float, float] = (0.2, 0.7, 0.1),
+        weights: Tuple[float, float, float] = (0, 0.9, 0.1),
     ) -> int:
         """Calculates the weighted fuzzy score for the search key and
         target key. The weights are used to determine how much each
