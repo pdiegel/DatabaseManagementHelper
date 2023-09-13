@@ -54,8 +54,10 @@ class CloseJobSearchModel:
         fuzzy_scores = [
             choice
             for choice in choices
-            if self.weighted_fuzzy_score(search_keyword.upper(), choice.upper())
-            >= 70
+            if self.weighted_fuzzy_score(
+                search_keyword.upper(), choice.upper(), search_type
+            )
+            >= 60
         ]
 
         # Get the corresponding rows in the DataFrame
@@ -77,6 +79,7 @@ class CloseJobSearchModel:
         self,
         search_key: str,
         target_key: str,
+        search_type: str,
         weights: Tuple[float, float, float] = (0.2, 0.7, 0.1),
     ) -> int:
         """Calculates the weighted fuzzy score for the search key and
@@ -88,6 +91,8 @@ class CloseJobSearchModel:
         Args:
             search_key (str): The search key.
             target_key (str): The target key.
+            search_type (str): The search type. Either "Street Name" or
+                "Subdivision".
             weights (Tuple[float, float, float], optional): The weights
                 for the fuzzy score. Defaults to (0.2, 0.7, 0.1).
 
@@ -95,6 +100,9 @@ class CloseJobSearchModel:
             int: The weighted fuzzy score.
         """
         # Tokenize the search and target addresses
+        if search_type == "Subdivision":
+            return fuzz.ratio(search_key, target_key)
+
         search_tokens = self.tokenize_address(search_key)
         target_tokens = self.tokenize_address(target_key)
 
