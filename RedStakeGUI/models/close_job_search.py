@@ -1,9 +1,10 @@
+import logging
 import re
 from typing import Tuple
 
 import pyperclip
 import ttkbootstrap as ttk
-from thefuzz import fuzz, process
+from thefuzz import fuzz
 
 from RedStakeGUI.constants import ACCESS_DATABASE
 
@@ -54,7 +55,7 @@ class CloseJobSearchModel:
             choice
             for choice in choices
             if self.weighted_fuzzy_score(search_keyword.upper(), choice.upper())
-            >= 80
+            >= 70
         ]
 
         # Get the corresponding rows in the DataFrame
@@ -131,7 +132,7 @@ class CloseJobSearchModel:
                 street type.
         """
 
-        match = re.match(r"(\d*)\s*([\w\s]*\w)\s*(\w*)", address)
+        match = re.match(r"(\d*)\s*(.*?)(?=\s*\w*\s*$)(\s+\w+\s*)?$", address)
         if not match:
             return "", "", ""
 
@@ -155,10 +156,13 @@ class CloseJobSearchModel:
             "PLACE": "PL",
         }
 
-        for key, value in street_type_abbr.items():
-            street_type = street_type.upper().replace(key, value)
+        if street_type:
+            for key, value in street_type_abbr.items():
+                street_type = street_type.upper().replace(key, value)
+        else:
+            street_type = ""
 
-        return street_name, house_number, street_type
+        return house_number, street_name, street_type
 
     def copy_selected_rows(self) -> None:
         """Copies the selected rows from the treeview widget to the
