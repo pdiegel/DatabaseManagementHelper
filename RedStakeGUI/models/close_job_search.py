@@ -45,7 +45,7 @@ class CloseJobSearchModel:
         jobs_df = ACCESS_DATABASE.all_job_data
         search_type = self.inputs["Search Type"].get().strip()
 
-        if search_type == "Street Name":
+        if search_type == "Property Address":
             choices = jobs_df["Property Address"]
         else:
             choices = jobs_df["Subdivision"]
@@ -61,7 +61,7 @@ class CloseJobSearchModel:
         ]
 
         # Get the corresponding rows in the DataFrame
-        if search_type == "Street Name":
+        if search_type == "Property Address":
             matched_rows = jobs_df[
                 jobs_df["Property Address"].isin(fuzzy_scores)
             ]
@@ -84,14 +84,14 @@ class CloseJobSearchModel:
     ) -> int:
         """Calculates the weighted fuzzy score for the search key and
         target key. The weights are used to determine how much each
-        component of the fuzzy score is worth. Street name in this case
+        component of the fuzzy score is worth. Property Address in this case
         is worth 70% of the fuzzy score, house number is worth 20% and
         street type is worth 10%.
 
         Args:
             search_key (str): The search key.
             target_key (str): The target key.
-            search_type (str): The search type. Either "Street Name" or
+            search_type (str): The search type. Either "Property Address" or
                 "Subdivision".
             weights (Tuple[float, float, float], optional): The weights
                 for the fuzzy score. Defaults to (0.2, 0.7, 0.1).
@@ -130,17 +130,18 @@ class CloseJobSearchModel:
         return weighted_score
 
     def tokenize_address(self, address: str) -> Tuple[str, str, str]:
-        """Tokenizes the address into street name, house number and
+        """Tokenizes the address into Property Address, house number and
         street type.
 
         Args:
             address (str): The address to tokenize.
 
         Returns:
-            Tuple[str, str, str]: The street name, house number and
+            Tuple[str, str, str]: The Property Address, house number and
                 street type.
         """
 
+        # Handle multiple address types
         match = re.match(r"(\d*)\s*(.*?)(?=\s*\w*\s*$)(\s+\w+\s*)?$", address)
         if not match:
             return "", "", ""
@@ -153,21 +154,26 @@ class CloseJobSearchModel:
 
         # Handle common abbreviations
         street_type_abbr = {
+            "ROAD": "RD",
             "STREET": "ST",
             "AVENUE": "AVE",
-            "ROAD": "RD",
             "DRIVE": "DR",
-            "COURT": "CT",
             "LANE": "LN",
+            "COURT": "CT",
             "CIRCLE": "CIR",
             "BOULEVARD": "BLVD",
             "TERRACE": "TER",
             "PLACE": "PL",
+            "SQUARE": "SQ",
+            "GROVE": "GRV",
+            "AVN": "AVE",
         }
 
         if street_type:
             for key, value in street_type_abbr.items():
                 street_type = street_type.upper().replace(key, value)
+                if street_type not in street_type_abbr.values():
+                    street_type = ""
         else:
             street_type = ""
 

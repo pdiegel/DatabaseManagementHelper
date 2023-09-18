@@ -23,10 +23,12 @@ class CloseJobSearchView(BaseView):
 
         # Dropdown values are used to determine if an input field should
         # be a dropdown or a text field.
-        self.dropdowns = {"Search Type": ["Street Name", "Subdivision Name"]}
+        self.dropdowns = {
+            "Search Type": ["Property Address", "Subdivision Name"]
+        }
         self.create_fields()
 
-        # Sets the default value for the dropdown to 'Street Name'.
+        # Sets the default value for the dropdown to 'Property Address'.
         self.inputs["Search Type"].current(0)
 
         # Used to display any info or error messages to the user.

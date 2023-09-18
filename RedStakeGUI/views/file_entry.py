@@ -55,7 +55,7 @@ class FileEntryView(BaseView):
         self.buttons = {
             "Submit": self.model.submit_job_data,
             "Generate FN": self.model.generate_fn,
-            "Gather Contacts": self.model.gather_job_data,
+            "Gather Contacts": self.model.gather_existing_job_contacts,
             "Clear": self.model.clear_inputs,
         }
         self.create_buttons()
