@@ -1,8 +1,10 @@
-import pyodbc
-from typing import Tuple
-from pyodbc import Connection, Cursor
-import pandas as pd
 import logging
+import urllib
+
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import text
 
 
 class Table:
@@ -63,7 +65,11 @@ class Table:
 
     @property
     def sql_formatted_values(self) -> list:
-        return "?," * len(self.columns_with_data) - 1 + "?"
+        values = ", ".join(
+            [f":{column.replace(' ','')}" for column in self.columns_with_data]
+        )
+        print(values)
+        return values
 
 
 class AccessDB:
@@ -72,31 +78,34 @@ class AccessDB:
     DRIVER = "{Microsoft Access Driver (*.mdb, *.accdb)}"
 
     def __init__(self, db_path: str):
-        self.connection_string = f"DRIVER={self.DRIVER};DBQ={db_path}"
-        self.connection, self.cursor = self.connect_to_database()
+        """Initializes the AccessDB class.
+
+        Args:
+            db_path (str): The path to the access database.
+        """
+        connection_string = (
+            r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+            rf"DBQ={db_path};"
+            r"ExtendedAnsiSQL=1;"
+        )
+        urllib_parse = urllib.parse.quote_plus(connection_string)
+        connection_uri = f"access+pyodbc:///?odbc_connect={urllib_parse}"
+
+        logging.debug(f"Connection string: {connection_uri}")
+
+        self.engine = create_engine(connection_uri)
+        logging.debug(f"Engine created: {self.engine}")
+
+        self.session = sessionmaker(bind=self.engine)()
+        logging.debug(f"Session created: {self.session}")
+
         self.all_job_data = self.get_all_job_data()
+        logging.debug(f"All job data: {self.all_job_data}")
+
         self.query_types = {
             "INSERT": self.insert_query,
             "UPDATE": self.update_query,
         }
-
-    def connect_to_database(self) -> Tuple[Connection, Cursor]:
-        """Attempts to connect to the database.
-
-        Returns:
-            Tuple[Connection, Cursor]: The connection and cursor
-            objects.
-        """
-        try:
-            connection = pyodbc.connect(self.connection_string)
-            cursor = connection.cursor()
-        except pyodbc.Error as error:
-            print(error)
-            raise error
-        else:
-            for table_info in cursor.tables(tableType="TABLE"):
-                print(table_info.table_name)
-            return connection, cursor
 
     def get_all_job_data(self) -> pd.DataFrame:
         """Queries the database for the existing job data, and returns
@@ -121,9 +130,10 @@ class AccessDB:
  [Job Number], [Subdivision], [Lot], [Block] FROM [Hebb & Hanskin]"""
         mckinzie_query = """SELECT [Property Address], [Subdivision],
  [Lot], [Block] FROM [McKinzie]"""
-        df1 = pd.read_sql(existing_jobs_query, self.connection)
-        df2 = pd.read_sql(hebb_hanskin_query, self.connection)
-        df3 = pd.read_sql(mckinzie_query, self.connection)
+
+        df1 = pd.read_sql(existing_jobs_query, self.engine)
+        df2 = pd.read_sql(hebb_hanskin_query, self.engine)
+        df3 = pd.read_sql(mckinzie_query, self.engine)
 
         df1["Subdivision"] = df1["subdivision"]
         df1["Block"] = df1["block"]
@@ -169,7 +179,7 @@ class AccessDB:
         query_type: str,
         commit: bool = False,
     ) -> bool:
-        """Runs a query on the active database connection.
+        """Runs a query on the active database engine.
 
         Args:
             table (Table): The Table object to retrieve the table name
@@ -190,12 +200,14 @@ class AccessDB:
 
         try:
             self.query_types[query_type](table)
-            logging.info(f"Number of rows affected: {self.cursor.rowcount}")
             if commit:
-                self.connection.commit()
-            logging.info(f"Committed {table.name} with {table.columns}")
+                self.session.commit()
+                logging.info(f"Committed {table.name} with {table.columns}")
+            else:
+                logging.info(f"Dry run of {table.name} with {table.columns}")
             return True
-        except pyodbc.Error as e:
+
+        except Exception as e:
             logging.error(
                 f"Error running query {query_type}. {table.name},\
  {table.columns}, {e}"
@@ -217,8 +229,15 @@ class AccessDB:
 
         query = f"INSERT INTO [{table.name}] ({table.sql_formatted_columns})\
  VALUES ({table.sql_formatted_values})"
+        logging.debug(f"Query: {query}")
 
-        self.cursor.execute(query, table.column_data_values)
+        values = {
+            column.replace(" ", ""): table.columns[column]
+            for column in table.columns_with_data
+        }
+        logging.debug(f"Values: {values}")
+
+        self.session.execute(text(query), values)
         logging.info(f"Inserted {table.name} with {table.columns}")
 
     def update_query(self, table: Table) -> None:
@@ -244,7 +263,7 @@ class AccessDB:
         query = f"UPDATE [{table.name}] SET {set_statement} WHERE [Job Number]\
  = '{table.columns['Job Number']}'"
 
-        self.cursor.execute(query)
+        self.session.execute(text(query))
         logging.info(f"Updated {table.name} with {table.columns}")
 
     def is_valid(self, table: Table) -> bool:
@@ -266,10 +285,20 @@ class AccessDB:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
     db = AccessDB("\\\\server\\access\\Database Backup\\MainDB_be.accdb")
     table = Table("Existing Jobs", Table.EXISTING_JOBS_SCHEMA)
     table.set_data("Job Number", "12345")
     table.set_data("Address Number", "12345")
     table.set_data("Street Name", "12345")
     table.set_data("subdivision", "12345")
-    db.run_query(table, "UPDATE", True)
+    db.run_query(table, "INSERT", False)
+
+    table.set_data("subdivision", "5251")
+    db.run_query(table, "UPDATE", False)
+    print(
+        db.session.execute(
+            text("SELECT * FROM [Existing Jobs] WHERE [Job Number] = '12345'")
+        ).fetchall()
+    )
