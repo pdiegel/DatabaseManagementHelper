@@ -59,7 +59,10 @@ class SettingsManager:
         encrypted_password = os.getenv("SENDER_EMAIL_PASSWORD")
         password = ""
 
-        # Error handling for corrupted settings file
+        if encrypted_password is None:
+            logging.error("Sender email password is None.")
+            return sender_email, recipient_email, password
+
         try:
             password = self.encryption_manager.decrypt(encrypted_password)
         except Exception as e:

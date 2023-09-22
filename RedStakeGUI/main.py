@@ -1,9 +1,12 @@
+# Import the logging config before any other imports.
+import RedStakeGUI.logging_config
 import logging
 from tkinter import Event
 
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import MAIN_TITLE
+import RedStakeGUI.constants as constants
+
 from RedStakeGUI.views.cad_opener import CADOpenerView
 from RedStakeGUI.views.close_job_search import CloseJobSearchView
 from RedStakeGUI.views.file_entry import FileEntryView
@@ -18,7 +21,7 @@ class MainApp(ttk.Window):
 
     def __init__(self):
         super().__init__()
-        self.title(MAIN_TITLE)
+        self.title(constants.MAIN_TITLE)
         self.notebook = ttk.Notebook(self)
 
         logging.info("Creating notebook tabs.")
@@ -68,12 +71,6 @@ class MainApp(ttk.Window):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%m/%d/%Y %H:%M",
-        force=True,
-    )
     logging.info("Starting RedStakeGUI.")
     print(logging.getLogger(__name__))
     app = MainApp()

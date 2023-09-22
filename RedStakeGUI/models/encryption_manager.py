@@ -44,8 +44,11 @@ class EncryptionManager:
         Returns:
             str: The decrypted password.
         """
+        if not ciphertext:
+            logging.error("No password provided.")
+            return ""
         try:
             return self.cipher_suite.decrypt(ciphertext)
         except Exception as e:
             logging.error(f"Error decrypting password: {e}", exc_info=True)
-        return ""
+            return ""

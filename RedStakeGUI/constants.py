@@ -10,6 +10,7 @@ from RedStakeGUI.models.encryption_manager import EncryptionManager
 from RedStakeGUI.models.settings_manager import SettingsManager
 
 # --- Titles and Labels ---
+print("logger should be working here")
 MAIN_TITLE = "Red Stake Surveyors, Inc."
 
 # --- Paths and Directories ---
@@ -58,6 +59,10 @@ logging.info("Setting up encryption and settings.")
 
 def get_encryption_manager() -> EncryptionManager:
     encryption_key_string = os.getenv("ENCRYPTION_KEY")
+    if encryption_key_string:
+        logging.info(
+            f"Successfully got encryption key string: {encryption_key_string}"
+        )
     return EncryptionManager(encryption_key_string)
 
 
@@ -73,6 +78,9 @@ else:
 
 SETTINGS_MANAGER = SettingsManager(ENV_PATH, ENCRYPTION_MANAGER)
 logging.info("Successfully set up settings manager.")
+
+logging.info("Saving encryption key to settings.")
+SETTINGS_MANAGER.update_env_file("ENCRYPTION_KEY", ENCRYPTION_KEY)
 
 
 # --- Utility Functions ---
