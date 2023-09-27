@@ -81,7 +81,7 @@ class FileEntryModel:
         self.inputs = inputs
         self.info_label = info_label
         self.database_helper = DatabaseHelper()
-        self.job_number_storage = JobNumberStorage(ACCESS_DATABASE.cursor)
+        self.job_number_storage = JobNumberStorage(ACCESS_DATABASE)
 
     def gather_job_data(self) -> dict:
         """Gathers the job data from the user inputs and the parcel data
