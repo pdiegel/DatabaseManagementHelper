@@ -21,7 +21,7 @@ To utilize the suite, follow these steps:
 1. **Clone the repository and navigate to its root directory.**
 
     ``` bash
-    git clone [Your Repository URL]
+    git clone https://github.com/pdiegel/LandSurveyWorkflowSuite.git
     ```
 
 2. **Install the necessary dependencies.**
