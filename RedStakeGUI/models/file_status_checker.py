@@ -73,7 +73,10 @@ class FileStatusCheckerModel:
 
         active = "Yes" if active_job_data else "No"
 
-        order_date = order_date.strftime("%m/%d/%Y") if order_date else None
+        order_date = order_date.strftime("%m/%d/%Y") if order_date else ""
+        signature_date = (
+            signature_date.strftime("%m/%d/%Y") if signature_date else ""
+        )
 
         data_map = {
             "Order Date": order_date,
