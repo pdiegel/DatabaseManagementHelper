@@ -283,6 +283,17 @@ class AccessDB:
             return False
         return True
 
+    def execute_generic_query(self, query: str) -> list:
+        """Executes a generic query on the database.
+
+        Args:
+            query (str): The query to execute.
+
+        Returns:
+            list: The results of the query.
+        """
+        return self.session.execute(text(query)).fetchall()
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
