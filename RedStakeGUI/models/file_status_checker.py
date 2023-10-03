@@ -21,6 +21,13 @@ class FileStatusCheckerModel:
         self.inputs["File Number"].bind("<Return>", self.on_enter)
 
     def lookup_file(self) -> None:
+        """Looks up the file number in the database and populates the
+        input fields with the data from the database.
+
+        If the file number is not found, the info label will display
+        an error message. If the file number is found, the info label
+        will display a success message.
+        """
         access_db = ACCESS_DATABASE
         file_number = self.inputs["File Number"].get()
 
@@ -99,7 +106,7 @@ class FileStatusCheckerModel:
             self.update_info_label(2, file_number=file_number)
 
     def clear_inputs(self) -> None:
-        """Clears all the input fields. Ignore the search type field."""
+        """Clears all the input fields."""
         input_objects = list(self.inputs.values())
         programmable_input_objects = list(self.programmable_inputs.values())
 
