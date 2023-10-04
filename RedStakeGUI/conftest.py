@@ -22,6 +22,16 @@ def test_address() -> str:
 
 
 @pytest.fixture(scope="module")
+def test_subdivision() -> str:
+    """Fixture to get a test subdivision.
+
+    Returns:
+        str: The test subdivision.
+    """
+    return "Whitakers Landing"
+
+
+@pytest.fixture(scope="module")
 def main_app() -> MainApp:
     """Fixture to get the main app.
 

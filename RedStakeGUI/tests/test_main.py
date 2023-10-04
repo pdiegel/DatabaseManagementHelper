@@ -1,7 +1,8 @@
 import pytest
 
-# pytest -s -v RedStakeGUI/tests/test_main.py
 from RedStakeGUI.main import MainApp
+
+# pytest -s -v RedStakeGUI/tests/test_main.py
 
 
 def test_notebook_tabs(main_app: MainApp) -> None:

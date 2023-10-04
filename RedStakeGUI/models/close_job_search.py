@@ -283,6 +283,7 @@ class CloseJobSearchModel:
         if self.tree:
             self.tree.destroy()
             self.tree_scrollbar.destroy()
+            self.tree = None
         self.update_view_geometry()
 
     def update_view_geometry(self) -> None:
