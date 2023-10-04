@@ -1,9 +1,11 @@
 import logging
-import pyperclip
-import ttkbootstrap as ttk
-from sqlalchemy import text
-from RedStakeGUI.constants import ACCESS_DATABASE
 from tkinter import Event
+from typing import List, Tuple
+
+import ttkbootstrap as ttk
+
+from RedStakeGUI.constants import ACCESS_DATABASE
+from RedStakeGUI.models.access_database import AccessDB
 
 
 class FileStatusCheckerModel:
@@ -12,6 +14,7 @@ class FileStatusCheckerModel:
         2: "File Number {file_number} found.",
         3: "File number copied to clipboard.",
         4: "Input field cleared.",
+        5: "Please enter a file number.",
     }
 
     def __init__(self, view: ttk.Frame):
@@ -29,22 +32,19 @@ class FileStatusCheckerModel:
         will display a success message.
         """
         access_db = ACCESS_DATABASE
-        file_number = self.inputs["File Number"].get()
+        file_number = self.inputs["File Number"].get().strip()
+        if not file_number:
+            logging.info("No file number entered.")
+            self.update_info_label(5)
+            return
 
-        existing_jobs_query = f"""SELECT Lot, block, subdivision FROM\
- [Existing Jobs] WHERE [Job Number] = '{file_number}'"""
-        active_jobs_query = f"""SELECT [Order Date], [Fieldwork Status],\
- [Inhouse Status], [Address], [County], [Parcel ID], [Requested Services]\
- FROM [Active Jobs] WHERE [Job Number] = '{file_number}'"""
-        signature_status_query = f"""SELECT [Signed], [Type of Survey],\
- [Signature Date], [Notes] FROM [Signature Status] WHERE [Job Number] =\
- '{file_number}'"""
+        logging.info(f"Looking up file number {file_number} in database.")
 
-        active_job_data = access_db.execute_generic_query(active_jobs_query)
-        existing_job_data = access_db.execute_generic_query(existing_jobs_query)
-        signature_status_data = access_db.execute_generic_query(
-            signature_status_query
-        )
+        (
+            active_job_data,
+            existing_job_data,
+            signature_status_data,
+        ) = self.get_job_data(access_db, file_number)
 
         (
             order_date,
@@ -78,6 +78,8 @@ class FileStatusCheckerModel:
             signature_date.strftime("%m/%d/%Y") if signature_date else ""
         )
 
+        logging.info("Successfully formatted data from database.")
+
         data_map = {
             "Order Date": order_date,
             "Active": active,
@@ -95,6 +97,8 @@ class FileStatusCheckerModel:
             "Signature Date": signature_date,
             "Signature Notes": signature_notes,
         }
+        logging.info(f"Determined data map: {data_map}.")
+
         for label, entry_data in data_map.items():
             entry_data = str(entry_data).title() if entry_data else ""
             # Cannot insert text into a readonly entry
@@ -107,6 +111,59 @@ class FileStatusCheckerModel:
             self.update_info_label(1, file_number=file_number)
         else:
             self.update_info_label(2, file_number=file_number)
+
+    def get_job_data(
+        self, access_db: AccessDB, file_number: str
+    ) -> Tuple[List[Tuple], List[Tuple], List[Tuple]]:
+        """Gets the job data from the database. If the job is not found,
+        an empty list will be returned.
+
+        Args:
+            access_db (AccessDB): The AccessDB object.
+            file_number (str): The file number to look up.
+
+        Returns:
+            Tuple[List[Tuple], List[Tuple], List[Tuple]]: A tuple of
+                lists containing the job data.
+        """
+        existing_jobs_query = f"""SELECT Lot, block, subdivision FROM\
+ [Existing Jobs] WHERE [Job Number] = '{file_number}'"""
+        active_jobs_query = f"""SELECT [Order Date], [Fieldwork Status],\
+ [Inhouse Status], [Address], [County], [Parcel ID], [Requested Services]\
+ FROM [Active Jobs] WHERE [Job Number] = '{file_number}'"""
+        signature_status_query = f"""SELECT [Signed], [Type of Survey],\
+ [Signature Date], [Notes] FROM [Signature Status] WHERE [Job Number] =\
+ '{file_number}'"""
+
+        logging.info("Running query for active job data..")
+        try:
+            active_job_data = access_db.execute_generic_query(active_jobs_query)
+            logging.info("Successfully ran query for active job data.")
+        except Exception as e:
+            logging.error(f"Failed to run query for active job data: {e}")
+            active_job_data = []
+
+        logging.info("Running query for existing job data..")
+        try:
+            existing_job_data = access_db.execute_generic_query(
+                existing_jobs_query
+            )
+            logging.info("Successfully ran query for existing job data.")
+        except Exception as e:
+            logging.error(f"Failed to run query for existing job data: {e}")
+            existing_job_data = []
+
+        logging.info("Running query for signature status data..")
+        try:
+            signature_status_data = access_db.execute_generic_query(
+                signature_status_query
+            )
+            logging.info("Successfully ran query for signature status data.")
+        except Exception as e:
+            logging.error(f"Failed to run query for signature status data: {e}")
+            signature_status_data = []
+
+        return active_job_data, existing_job_data, signature_status_data
 
     def clear_inputs(self) -> None:
         """Clears all the input fields."""
@@ -121,6 +178,7 @@ class FileStatusCheckerModel:
             input_field.delete(0, "end")
             input_field.config(state="readonly")
 
+        logging.info("Cleared input fields.")
         self.update_info_label(4)
         input_objects[0].focus()
 
@@ -133,7 +191,6 @@ class FileStatusCheckerModel:
                 info label.
             **kwargs: The format keyword arguments for the text to be
                 displayed in the info label.
-
         """
         info_text = self.INFO_LABEL_CODES[code].format(**kwargs)
         self.info_label.config(text=info_text)
