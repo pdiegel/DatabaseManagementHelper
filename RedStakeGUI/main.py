@@ -12,6 +12,7 @@ from RedStakeGUI.views.close_job_search import CloseJobSearchView
 from RedStakeGUI.views.file_entry import FileEntryView
 from RedStakeGUI.views.intake_sheet import IntakeSheetView
 from RedStakeGUI.views.website_search import WebsiteSearchView
+from RedStakeGUI.views.file_status_checker import FileStatusCheckerView
 
 
 class MainApp(ttk.Window):
@@ -27,6 +28,7 @@ class MainApp(ttk.Window):
         logging.info("Creating notebook tabs.")
         self.notebook_tabs = {
             "Close Job Search": CloseJobSearchView(self.notebook),
+            "File Status": FileStatusCheckerView(self.notebook),
             "File Entry": FileEntryView(self.notebook),
             "Intake Sheet": IntakeSheetView(self.notebook),
             "Website Search": WebsiteSearchView(self.notebook),
@@ -63,7 +65,7 @@ class MainApp(ttk.Window):
             self.notebook.tab(selected_tab_index, "text")
         ]
 
-        required_window_width = selected_tab_object.winfo_reqwidth() + 50
+        required_window_width = selected_tab_object.winfo_reqwidth() + 120
         required_window_height = selected_tab_object.winfo_reqheight() + 50
         new_geometry = f"{required_window_width}x{required_window_height}"
         self.geometry(new_geometry)
