@@ -42,6 +42,7 @@ class FileStatusCheckerView(BaseView):
 
         self.create_fields()
 
+        # Threw this together quickly. Should probably be refactored.
         for key in self.programmable_inputs.keys():
             frame = ttk.Frame(self)
             self.create_widget("Label", frame, text=f"{key}:", width=23).pack(
