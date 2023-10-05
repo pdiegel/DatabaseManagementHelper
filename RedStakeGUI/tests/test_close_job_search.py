@@ -49,6 +49,11 @@ def setup_close_job_search_tab_by_subdivision(
 def test_close_job_search_tab_empty_search(
     close_job_tab: CloseJobSearchView,
 ) -> None:
+    """Testing functionality of the search button.
+
+    Args:
+        close_job_tab (CloseJobSearchView): The close job tab.
+    """
     close_job_tab.buttons["Search"]()
     treeview = close_job_tab.model.tree
 
@@ -58,7 +63,7 @@ def test_close_job_search_tab_empty_search(
 def test_close_job_search_tab_search_by_address(
     setup_close_job_search_tab_by_address: CloseJobSearchView,
 ) -> None:
-    """Testing search functionality of the search button.
+    """Testing functionality of the search button.
 
     Args:
         setup_close_job_search_tab_by_address (CloseJobSearchView):
@@ -78,7 +83,7 @@ def test_close_job_search_tab_search_by_address(
 def test_close_job_search_tab_search_by_subdivision(
     setup_close_job_search_tab_by_subdivision: CloseJobSearchView,
 ) -> None:
-    """Testing search functionality of the search button.
+    """Testing functionality of the search button.
 
     Args:
         setup_close_job_search_tab_by_subdivision (CloseJobSearchView):
@@ -98,7 +103,7 @@ def test_close_job_search_tab_search_by_subdivision(
 def test_close_job_search_tab_copy_selection_button(
     setup_close_job_search_tab_by_address: CloseJobSearchView,
 ) -> None:
-    """Testing search functionality of the copy selection button.
+    """Testing functionality of the copy selection button.
 
     Args:
         setup_close_job_search_tab_by_address (CloseJobSearchView):
@@ -128,7 +133,7 @@ def test_close_job_search_tab_copy_selection_button(
 def test_close_job_search_tab_clear_button(
     setup_close_job_search_tab_by_subdivision: CloseJobSearchView,
 ) -> None:
-    """Testing search functionality of the clear button.
+    """Testing functionality of the clear button.
 
     Args:
         setup_close_job_search_tab_by_subdivision (CloseJobSearchView):
