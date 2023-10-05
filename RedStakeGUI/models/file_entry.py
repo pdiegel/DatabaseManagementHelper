@@ -2,7 +2,7 @@ import logging
 
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import ACCESS_DATABASE
+from RedStakeGUI.constants import ACCESS_DATABASE, PARCEL_DATA_COUNTIES
 from RedStakeGUI.models.access_database import Table
 from RedStakeGUI.models.data_collection import DataCollector
 from RedStakeGUI.models.job_number_storage import JobNumberStorage
@@ -69,6 +69,7 @@ class FileEntryModel:
         13: "Error creating new job number {job_number}.",
         14: "Activating job number {job_number}...",
         15: "New entry for job number {job_number} created.",
+        16: "Please enter a valid Job Number.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -90,14 +91,25 @@ class FileEntryModel:
         Returns:
             dict: The job data to be submitted to the access database.
         """
-        job_number = self.inputs["Job Number"].get()
+        job_number = self.inputs["Job Number"].get().strip()
+        if not job_number or len(job_number) < 8 or len(job_number) > 14:
+            return self.update_info_label(16)
 
         county = self.inputs["County"].get()
-        parcel_id = self.inputs["Parcel ID"].get()
+        parcel_id = self.inputs["Parcel ID"].get().strip()
         if not county or not parcel_id:
             return self.update_info_label(3)
+        elif county not in PARCEL_DATA_COUNTIES:
+            return self.update_info_label(8, county=county)
+        elif not parcel_id.isnumeric():
+            return self.update_info_label(2)
 
-        parcel_data = DataCollector(parcel_id, county).parcel_data
+        try:
+            parcel_data = DataCollector(parcel_id, county).parcel_data
+        except IndexError as e:
+            logging.error(e)
+            return self.update_info_label(4, parcel_id=parcel_id, county=county)
+
         logging.info(parcel_data)
 
         job_data = {
@@ -234,6 +246,8 @@ class FileEntryModel:
         number already exists in the database, the job data will be
         updated. Otherwise, a new job will be created."""
         job_data = self.gather_job_data()
+        if not job_data:
+            return
         job_number = job_data["Job Number"]
 
         existing_job_table, active_job_table = self.configure_tables(job_data)
@@ -263,7 +277,7 @@ class FileEntryModel:
         database."""
         current_year = self.job_number_storage.year
 
-        existing_current_year_jobs = ACCESS_DATABASE.connection.execute(
+        existing_current_year_jobs = ACCESS_DATABASE.execute_generic_query(
             f"SELECT [Job Number] FROM [Existing Jobs] WHERE [Job Number]\
     LIKE '{current_year}%'"
         )
