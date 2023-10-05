@@ -32,6 +32,16 @@ def test_subdivision() -> str:
 
 
 @pytest.fixture(scope="module")
+def test_file_number() -> str:
+    """Fixture to get a test file number.
+
+    Returns:
+        str: The test file number.
+    """
+    return "23050226"
+
+
+@pytest.fixture(scope="module")
 def main_app() -> MainApp:
     """Fixture to get the main app.
 
