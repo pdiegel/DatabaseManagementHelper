@@ -50,16 +50,15 @@ class FileStatusCheckerModel:
             order_date,
             fieldwork_status,
             inhouse_status,
-            address,
             county,
             parcel_id,
             scope_of_work,
         ) = (
-            active_job_data[0] if active_job_data else [""] * 7
+            active_job_data[0] if active_job_data else [""] * 6
         )
 
-        lot, block, subdivision = (
-            existing_job_data[0] if existing_job_data else ([""] * 3)
+        address_number, street_name, lot, block, subdivision = (
+            existing_job_data[0] if existing_job_data else [""] * 5
         )
 
         (
@@ -71,6 +70,8 @@ class FileStatusCheckerModel:
             signature_status_data[0] if signature_status_data else [""] * 4
         )
 
+        address_number = address_number if address_number else ""
+        address = f"{address_number} {street_name}".strip()
         active = "Yes" if active_job_data else "No"
 
         order_date = order_date.strftime("%m/%d/%Y") if order_date else ""
@@ -101,11 +102,12 @@ class FileStatusCheckerModel:
 
         for label, entry_data in data_map.items():
             entry_data = str(entry_data).title() if entry_data else ""
+            entry = self.programmable_inputs[label]
             # Cannot insert text into a readonly entry
-            self.programmable_inputs[label].config(state="normal")
-            self.programmable_inputs[label].delete(0, "end")
-            self.programmable_inputs[label].insert(0, entry_data)
-            self.programmable_inputs[label].config(state="readonly")
+            entry.config(state="normal")
+            entry.delete(0, "end")
+            entry.insert(0, entry_data)
+            entry.config(state="readonly")
 
         if not existing_job_data:
             self.update_info_label(1, file_number=file_number)
@@ -126,10 +128,11 @@ class FileStatusCheckerModel:
             Tuple[List[Tuple], List[Tuple], List[Tuple]]: A tuple of
                 lists containing the job data.
         """
-        existing_jobs_query = f"""SELECT Lot, block, subdivision FROM\
- [Existing Jobs] WHERE [Job Number] = '{file_number}'"""
+        existing_jobs_query = f"""SELECT [Address Number], [Street Name],\
+ Lot, block, subdivision FROM [Existing Jobs] WHERE [Job Number] =\
+ '{file_number}'"""
         active_jobs_query = f"""SELECT [Order Date], [Fieldwork Status],\
- [Inhouse Status], [Address], [County], [Parcel ID], [Requested Services]\
+ [Inhouse Status], [County], [Parcel ID], [Requested Services]\
  FROM [Active Jobs] WHERE [Job Number] = '{file_number}'"""
         signature_status_query = f"""SELECT [Signed], [Type of Survey],\
  [Signature Date], [Notes] FROM [Signature Status] WHERE [Job Number] =\
