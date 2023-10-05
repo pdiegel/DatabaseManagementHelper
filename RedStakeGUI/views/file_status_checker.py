@@ -22,17 +22,17 @@ class FileStatusCheckerView(BaseView):
         # These inputs will not be entered by the user. They will be
         # programmatically entered by the program.
         programmable_inputs = [
-            "Order Date",
-            "Active",
-            "Fieldwork Status",
-            "Inhouse Status",
             "Property Address",
-            "County",
-            "Parcel ID",
             "Lot",
             "Block",
             "Subdivision",
+            "Active",
+            "Order Date",
             "Scope of Work",
+            "Fieldwork Status",
+            "Inhouse Status",
+            "County",
+            "Parcel ID",
             "Signed",
             "Signed Scope of Work",
             "Signature Date",

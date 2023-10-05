@@ -13,7 +13,7 @@ class FileStatusCheckerModel:
         1: "File Number {file_number} not found.",
         2: "File Number {file_number} found.",
         3: "File number copied to clipboard.",
-        4: "Input field cleared.",
+        4: "Inputs cleared.",
         5: "Please enter a file number.",
     }
 
