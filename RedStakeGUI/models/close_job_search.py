@@ -225,36 +225,13 @@ class CloseJobSearchModel:
         tree.column("Block", anchor="w", width=40)
 
         tree.heading("#0", text="", anchor="w")
-        tree.heading(
-            "Job Number",
-            text="Job Number",
-            anchor="w",
-            command=lambda: self.sort_treeview(tree, "Job Number", False),
-        )
-        tree.heading(
-            "Property Address",
-            text="Property Address",
-            anchor="w",
-            command=lambda: self.sort_treeview(tree, "Property Address", False),
-        )
-        tree.heading(
-            "Subdivision",
-            text="Subdivision",
-            anchor="w",
-            command=lambda: self.sort_treeview(tree, "Subdivision", False),
-        )
-        tree.heading(
-            "Lot",
-            text="Lot",
-            anchor="w",
-            command=lambda: self.sort_treeview(tree, "Lot", False),
-        )
-        tree.heading(
-            "Block",
-            text="Block",
-            anchor="w",
-            command=lambda: self.sort_treeview(tree, "Block", False),
-        )
+        for heading in tree["columns"]:
+            tree.heading(
+                heading,
+                text=heading,
+                anchor="w",
+                command=lambda h=heading: self.sort_treeview(tree, h, False),
+            )
 
         for index, row in enumerate(matched_rows):
             for key, _ in row.items():
@@ -306,6 +283,7 @@ class CloseJobSearchModel:
         if self.tree:
             self.tree.destroy()
             self.tree_scrollbar.destroy()
+            self.tree = None
         self.update_view_geometry()
 
     def update_view_geometry(self) -> None:
@@ -376,5 +354,5 @@ class CloseJobSearchModel:
         if not selection_index:
             return
 
-        rows = [self.tree.item(row)["values"] for row in selection_index]
+        rows = [self.tree.item(row, "values") for row in selection_index]
         return rows

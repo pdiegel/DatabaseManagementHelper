@@ -10,7 +10,6 @@ from RedStakeGUI.models.encryption_manager import EncryptionManager
 from RedStakeGUI.models.settings_manager import SettingsManager
 
 # --- Titles and Labels ---
-print("logger should be working here")
 MAIN_TITLE = "Red Stake Surveyors, Inc."
 
 # --- Paths and Directories ---

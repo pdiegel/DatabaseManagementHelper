@@ -1,4 +1,5 @@
 import datetime
+from sqlalchemy.sql import text
 
 
 class JobNumberStorage:
@@ -11,12 +12,12 @@ class JobNumberStorage:
         self.existing_job_numbers = set()
         self.active_job_numbers = set()
 
-        active_jobs = self.database.connection.execute(
-            "SELECT [Job Number] FROM [Active Jobs]"
+        active_jobs = self.database.session.execute(
+            text("SELECT [Job Number] FROM [Active Jobs]")
         )
 
-        existing_jobs = self.database.connection.execute(
-            "SELECT [Job Number] FROM [Existing Jobs]"
+        existing_jobs = self.database.session.execute(
+            text("SELECT [Job Number] FROM [Existing Jobs]")
         )
         self.add_active_job_numbers(active_jobs)
         self.add_existing_job_numbers(existing_jobs)
