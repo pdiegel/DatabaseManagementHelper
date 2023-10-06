@@ -52,6 +52,30 @@ def test_sarasota_parcel_id() -> str:
 
 
 @pytest.fixture(scope="module")
+def test_file_entry_data() -> dict[str, str]:
+    """Fixture to get a test file entry data.
+
+    Returns:
+        dict[str, str]: The test file entry data.
+    """
+    fields = {
+        "Job Date": "2021-01-01",
+        "Fieldwork Date": "2021-01-01",
+        "Inhouse Date": "2021-01-01",
+        "Job Number": "50050100",
+        "Parcel ID": "0057150069",
+        "County": "Sarasota",
+        "Entry By": "TEST",
+        "Fieldwork Crew": "CREW",
+        "Inhouse Assigned To": "ASSIGNED",
+        "Requested Services": "SURVEY",
+        "Contact Information": "CONTACT",
+        "Additional Information": "ADDITIONAL",
+    }
+    return fields
+
+
+@pytest.fixture(scope="module")
 def main_app() -> MainApp:
     """Fixture to get the main app.
 

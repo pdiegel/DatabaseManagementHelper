@@ -171,6 +171,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number already exists in the
         database and is active.
@@ -179,12 +180,14 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(10, job_number=job_number)
         try:
             logging.info(f"Updating job number {job_number}...")
-            self.database_helper.update_table(existing_job_table)
-            self.database_helper.update_table(active_job_table)
+            self.database_helper.update_table(existing_job_table, commit)
+            self.database_helper.update_table(active_job_table, commit)
             self.update_info_label(11, job_number=job_number)
             logging.info(f"Job Number {job_number} updated.")
         except Exception as e:
@@ -196,6 +199,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number already exists in the
         database but is not active.
@@ -204,12 +208,14 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(10, job_number=job_number)
         try:
             logging.info(f"Activating job number {job_number}...")
-            self.database_helper.update_table(existing_job_table)
-            self.database_helper.insert_into_table(active_job_table)
+            self.database_helper.update_table(existing_job_table, commit)
+            self.database_helper.insert_into_table(active_job_table, commit)
             self.update_info_label(14, job_number=job_number)
             logging.info(f"Job Number {job_number} activated.")
         except Exception as e:
@@ -221,6 +227,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number does not exist in the
         database.
@@ -229,22 +236,29 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(12, job_number=job_number)
         try:
             logging.info(f"Creating new job number {job_number}...")
-            self.database_helper.insert_into_table(existing_job_table)
-            self.database_helper.insert_into_table(active_job_table)
+            self.database_helper.insert_into_table(existing_job_table, commit)
+            self.database_helper.insert_into_table(active_job_table, commit)
             self.update_info_label(15, job_number=job_number)
             logging.info(f"Job Number {job_number} created.")
         except Exception as e:
             logging.error(e)
             self.update_info_label(13, job_number=job_number)
 
-    def submit_job_data(self) -> None:
+    def submit_job_data(self, commit: bool = True) -> None:
         """Submits the job data to the access database. If the job
         number already exists in the database, the job data will be
-        updated. Otherwise, a new job will be created."""
+        updated. Otherwise, a new job will be created.
+
+        Args:
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
+        """
         job_data = self.gather_job_data()
         if not job_data:
             return
@@ -257,15 +271,15 @@ class FileEntryModel:
 
         if job_exists and job_is_active:
             self.handle_existing_active_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         elif job_exists and not job_is_active:
             self.handle_existing_inactive_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         elif not job_exists:
             self.handle_new_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         else:
             self.update_info_label(12, job_number=job_number)
@@ -275,15 +289,6 @@ class FileEntryModel:
         generated by taking the current year and adding a number to the
         end of it. The number is the next unused job number in the
         database."""
-        current_year = self.job_number_storage.year
-
-        existing_current_year_jobs = ACCESS_DATABASE.execute_generic_query(
-            f"SELECT [Job Number] FROM [Existing Jobs] WHERE [Job Number]\
-    LIKE '{current_year}%'"
-        )
-        self.job_number_storage.add_current_year_job_numbers(
-            existing_current_year_jobs
-        )
         unused_job_number = self.job_number_storage.unused_job_number
 
         self.inputs["Job Number"].delete(0, "end")

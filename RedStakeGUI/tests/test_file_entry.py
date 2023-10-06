@@ -1,5 +1,7 @@
 import pytest
+
 from RedStakeGUI.views.file_entry import FileEntryView
+from ttkbootstrap import Entry, Combobox, DateEntry
 
 
 @pytest.fixture(scope="module")
@@ -24,6 +26,67 @@ def setup_file_entry_tab(
 
     yield file_entry_tab
     file_entry_tab.destroy()
+
+
+def test_file_entry_generate_fn_button(file_entry_tab: FileEntryView):
+    """Testing if the generate fn button works correctly.
+
+    Args:
+        file_entry_tab (FileEntryView): The file entry tab.
+    """
+    job_number_storage = file_entry_tab.model.job_number_storage
+    current_year_job_numbers = job_number_storage.get_current_year_job_numbers()
+
+    # Some of our file number have letters as suffixes, so we need to
+    # strip the letters and convert to integers to get the largest
+    # number.
+    largest_job_number = max(
+        map(lambda x: int(strip_non_numeric(x)), current_year_job_numbers)
+    )
+
+    assert int(job_number_storage.unused_job_number) > largest_job_number
+    assert len(job_number_storage.unused_job_number) == 8
+
+    assert file_entry_tab.inputs["Job Number"].get() == ""
+    file_entry_tab.buttons["Generate FN"]()
+    assert (
+        file_entry_tab.inputs["Job Number"].get()
+        == job_number_storage.unused_job_number
+    )
+
+
+def test_file_entry_submit_button(
+    file_entry_tab: FileEntryView, test_file_entry_data: dict[str, str]
+):
+    for input, data in test_file_entry_data.items():
+        gui_object = file_entry_tab.inputs[input]
+        if isinstance(gui_object, Combobox):
+            gui_object.current(0)
+        elif isinstance(gui_object, DateEntry):
+            gui_object = gui_object.entry
+        gui_object.insert(0, data)
+
+    file_entry_tab.model.submit_job_data(commit=False)
+    existing_job_numbers = (
+        file_entry_tab.model.job_number_storage.get_existing_job_numbers()
+    )
+    assert test_file_entry_data["Job Number"] in existing_job_numbers
+
+
+def strip_non_numeric(string: str) -> str:
+    """Strips all non-numeric characters from a string.
+
+    Args:
+        string (str): The string to strip.
+
+    Returns:
+        str: The stripped string.
+    """
+    numeric_string = "".join(filter(lambda x: x.isnumeric(), string))
+    if string != numeric_string:
+        print(f"\nString before filter: {string}")
+        print(f"String after filter: {numeric_string}")
+    return numeric_string
 
 
 # def test_file_entry_lookup_file_button(
