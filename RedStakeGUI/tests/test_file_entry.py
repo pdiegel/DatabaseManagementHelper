@@ -2,6 +2,8 @@ import pytest
 
 from RedStakeGUI.views.file_entry import FileEntryView
 from ttkbootstrap import Entry, Combobox, DateEntry
+from RedStakeGUI.constants import ACCESS_DATABASE
+from sqlalchemy import text
 
 
 @pytest.fixture(scope="module")
