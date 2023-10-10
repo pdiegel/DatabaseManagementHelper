@@ -89,7 +89,7 @@ def test_file_entry_submit_button(
     file_entry_tab.model.submit_job_data(commit=False)
     print(file_entry_tab.info_label.cget("text"))
 
-    # print(ACCESS_DATABASE.session.flush())
+    # ACCESS_DATABASE.session.flush()
     result = ACCESS_DATABASE.session.execute(
         text(
             f"SELECT * FROM [Existing Jobs] WHERE [Job Number] = \
@@ -102,6 +102,60 @@ def test_file_entry_submit_button(
         job is not None
     ), f"Job Number {test_file_entry_data['Job Number']} \
 not found in the database"
+
+
+# def test_SPECIAL_CHAR(
+#     file_entry_tab: FileEntryView, test_file_entry_data: dict[str, str]
+# ) -> None:
+#     """Testing if the submit button works correctly.
+
+#     Args:
+#         file_entry_tab (FileEntryView): The file entry tab.
+#         test_file_entry_data (dict[str, str]): The test file entry data.
+#     """
+#     for input, data in test_file_entry_data.items():
+#         gui_object = file_entry_tab.inputs[input]
+#         if isinstance(gui_object, Combobox):
+#             gui_object.current(0)
+#             continue
+#         elif isinstance(gui_object, DateEntry):
+#             gui_object = gui_object.entry
+#             gui_object.delete(0, "end")
+#         else:
+#             gui_object.delete(0, "end")
+#         gui_object.insert(0, data)
+
+#     for input, data in file_entry_tab.inputs.items():
+#         if input not in test_file_entry_data.keys():
+#             continue
+#         if isinstance(data, Entry):
+#             assert data.get() == test_file_entry_data[input]
+#         elif isinstance(data, Combobox):
+#             assert data.get() == test_file_entry_data[input]
+#         elif isinstance(data, DateEntry):
+#             assert data.entry.get() == test_file_entry_data[input]
+
+#     file_entry_tab.inputs["Additional Information"].insert(
+#         0, "!@#$%^&*()_+-=/?|[]{};':,.<>"
+#     )
+#     print(file_entry_tab.inputs["Additional Information"].get())
+
+#     file_entry_tab.model.submit_job_data()
+#     print(file_entry_tab.info_label.cget("text"))
+
+#     # print(ACCESS_DATABASE.session.flush())
+#     result = ACCESS_DATABASE.session.execute(
+#         text(
+#             f"SELECT * FROM [Existing Jobs] WHERE [Job Number] = \
+# '{test_file_entry_data['Job Number']}'",
+#         )
+#     )
+#     job = result.fetchone()
+
+#     assert (
+#         job is not None
+#     ), f"Job Number {test_file_entry_data['Job Number']} \
+# not found in the database"
 
 
 def strip_non_numeric(string: str) -> str:
