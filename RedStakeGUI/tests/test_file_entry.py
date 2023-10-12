@@ -9,21 +9,26 @@ from sqlalchemy import text
 @pytest.fixture(scope="module")
 def setup_file_entry_tab(
     file_entry_tab: FileEntryView,
-    test_file_number: str,
-    test_sarasota_parcel_id: str,
+    test_file_entry_data: dict[str, str],
 ) -> FileEntryView:
     """Fixture to set up the file entry tab for testing.
 
     Args:
         file_entry_tab (FileEntryView): The file entry tab.
-        test_file_number (str): The test file number.
-        test_sarasota_parcel_id (str): The test parcel id.
+        test_file_entry_data (dict[str, str]): The test file entry data.
 
     Yields:
         FileEntryView: The initialized file entry tab.
     """
-    file_entry_tab.inputs["Job Number"].insert(0, test_file_number)
-    file_entry_tab.inputs["Parcel ID"].insert(0, test_sarasota_parcel_id)
+    file_entry_tab.inputs["Job Number"].insert(
+        0, test_file_entry_data["Job Number"]
+    )
+    file_entry_tab.inputs["Parcel ID"].insert(
+        0, test_file_entry_data["Parcel ID"]
+    )
+    file_entry_tab.inputs["Contact Information"].insert(
+        0, test_file_entry_data["Contact Information"]
+    )
     file_entry_tab.inputs["County"].current(0)
 
     yield file_entry_tab
@@ -102,6 +107,55 @@ def test_file_entry_submit_button(
         job is not None
     ), f"Job Number {test_file_entry_data['Job Number']} \
 not found in the database"
+
+
+def test_file_entry_gather_contacts_button(
+    file_entry_tab: FileEntryView, test_file_entry_data: dict[str, str]
+) -> None:
+    """Testing if the gather contacts button works correctly.
+
+    Args:
+        file_entry_tab (FileEntryView): The file entry tab.
+        test_file_entry_data (dict[str, str]): The test file entry data.
+    """
+    file_entry_tab.buttons["Gather Contacts"]()
+    print(file_entry_tab.info_label.cget("text"))
+
+    variables_to_check = {
+        "Contact Information",
+        "Additional Information",
+        "Requested Services",
+    }
+
+    for variable in variables_to_check:
+        assert file_entry_tab.inputs[variable].get() != ""
+        assert file_entry_tab.inputs[variable].get() is not None
+        assert file_entry_tab.inputs[variable].get() != "None"
+        assert (
+            file_entry_tab.inputs[variable].get()
+            == test_file_entry_data[variable]
+        )
+
+
+def test_file_entry_clear_button(
+    file_entry_tab: FileEntryView,
+) -> None:
+    """Testing if the clear button works correctly.
+
+    Args:
+        file_entry_tab (FileEntryView): The file entry tab.
+    """
+    for entry in file_entry_tab.inputs.values():
+        if isinstance(entry, DateEntry):
+            entry = entry.entry
+        assert entry.get() != ""
+
+    file_entry_tab.buttons["Clear"]()
+
+    for entry in file_entry_tab.inputs.values():
+        if isinstance(entry, DateEntry):
+            entry = entry.entry
+        assert entry.get() == ""
 
 
 def strip_non_numeric(string: str) -> str:

@@ -75,6 +75,7 @@ class FileEntryModel:
         15: "New entry for job number {job_number} created.",
         16: "Please enter a valid Job Number.",
         17: "Unable to retrieve data for job number {job_number}.",
+        18: "Existing job contacts retrieved for job number {job_number}.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -359,6 +360,7 @@ class FileEntryModel:
             if value:
                 self.inputs[key].delete(0, "end")
                 self.inputs[key].insert(0, value)
+        self.update_info_label(18, job_number=job_number)
 
     def clear_inputs(self) -> None:
         """Clears all the input fields."""
