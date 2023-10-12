@@ -6,6 +6,7 @@ from RedStakeGUI.constants import ACCESS_DATABASE, PARCEL_DATA_COUNTIES
 from RedStakeGUI.models.access_database import Table
 from RedStakeGUI.models.data_collection import DataCollector
 from RedStakeGUI.models.job_number_storage import JobNumberStorage
+from sqlalchemy import text
 
 
 class DatabaseHelper:
@@ -45,9 +46,12 @@ class DatabaseHelper:
         Returns:
             tuple: The existing job contacts.
         """
-        existing_job_contacts = ACCESS_DATABASE.connection.execute(
-            f"SELECT [Additional Information], [Customer Contact Information],\
-[Customer Requests] FROM [Existing Jobs] WHERE [Job Number] = '{job_number}'"
+        existing_job_contacts = ACCESS_DATABASE.session.execute(
+            text(
+                f"SELECT [Additional Information],\
+ [Customer Contact Information], [Customer Requests] FROM\
+ [Existing Jobs] WHERE [Job Number] = '{job_number}'"
+            )
         )
         return existing_job_contacts.fetchall()
 
@@ -70,6 +74,7 @@ class FileEntryModel:
         14: "Activating job number {job_number}...",
         15: "New entry for job number {job_number} created.",
         16: "Please enter a valid Job Number.",
+        17: "Unable to retrieve data for job number {job_number}.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -270,14 +275,17 @@ class FileEntryModel:
         job_is_active = job_number in self.job_number_storage.active_job_numbers
 
         if job_exists and job_is_active:
+            logging.info("Updating active job.")
             self.handle_existing_active_job(
                 job_number, existing_job_table, active_job_table, commit
             )
         elif job_exists and not job_is_active:
+            logging.info("Inserting existing job into active jobs.")
             self.handle_existing_inactive_job(
                 job_number, existing_job_table, active_job_table, commit
             )
         elif not job_exists:
+            logging.info("Creating new job.")
             self.handle_new_job(
                 job_number, existing_job_table, active_job_table, commit
             )
@@ -328,13 +336,17 @@ class FileEntryModel:
         and populates the contact information input field with the
         contact information."""
         job_number = self.inputs["Job Number"].get()
-        contact_info = self.database_helper.gather_existing_job_contacts(
-            job_number
-        )[0]
+        job_info = self.database_helper.gather_existing_job_contacts(job_number)
+        if not job_info:
+            self.update_info_label(17, job_number=job_number)
+            return
 
-        additional_info = contact_info[0]
-        contact_info = contact_info[1]
-        requested_services = contact_info[2]
+        job_info = job_info[0]
+        logging.debug(job_info)
+
+        additional_info = job_info[0]
+        contact_info = job_info[1]
+        requested_services = job_info[2]
 
         contacts = {
             "Additional Information": additional_info,
@@ -343,8 +355,7 @@ class FileEntryModel:
         }
 
         for key, value in contacts.items():
-            if value == "N":
-                value = ""
+            logging.debug(f"Key: {key}, Value: {value}")
             if value:
                 self.inputs[key].delete(0, "end")
                 self.inputs[key].insert(0, value)

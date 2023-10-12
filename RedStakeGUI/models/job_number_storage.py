@@ -8,13 +8,6 @@ class JobNumberStorage:
         self.now = datetime.datetime.now()
         self.year = self.now.year % 100
         self.month = self.now.month
-        self.active_job_numbers = set()
-
-        active_jobs = self.database.execute_generic_query(
-            "SELECT [Job Number] FROM [Active Jobs]"
-        )
-
-        self.add_active_job_numbers(active_jobs)
 
     def get_job_number_prefix(self, num_previous_months: int = 0) -> str:
         month = self.month
@@ -65,6 +58,14 @@ class JobNumberStorage:
             "SELECT [Job Number] FROM [Existing Jobs]"
         )
         job_numbers = [job_number[0] for job_number in existing_jobs]
+        return set(job_numbers)
+
+    @property
+    def active_job_numbers(self) -> set[str]:
+        active_jobs = self.database.execute_generic_query(
+            "SELECT [Job Number] FROM [Active Jobs]"
+        )
+        job_numbers = [job_number[0] for job_number in active_jobs]
         return set(job_numbers)
 
     def add_job_number(self, job_number: str):

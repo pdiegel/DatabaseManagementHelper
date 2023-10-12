@@ -29,6 +29,7 @@ class IntakeSheetView(BaseView):
         # be a dropdown or a text field.
         self.dropdowns = {"County": PARCEL_DATA_COUNTIES}
         self.create_fields()
+        self.inputs["County"].current(0)
 
         # Used to display any info or error messages to the user.
         self.info_label = self.create_status_info_label()

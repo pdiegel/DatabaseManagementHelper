@@ -76,6 +76,5 @@ class MainApp(ttk.Window):
 
 if __name__ == "__main__":
     logging.info("Starting RedStakeGUI.")
-    print(logging.getLogger(__name__))
     app = MainApp()
     app.mainloop()
