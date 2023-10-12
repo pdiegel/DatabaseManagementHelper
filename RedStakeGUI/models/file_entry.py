@@ -2,10 +2,11 @@ import logging
 
 import ttkbootstrap as ttk
 
-from RedStakeGUI.constants import ACCESS_DATABASE
+from RedStakeGUI.constants import ACCESS_DATABASE, PARCEL_DATA_COUNTIES
 from RedStakeGUI.models.access_database import Table
 from RedStakeGUI.models.data_collection import DataCollector
 from RedStakeGUI.models.job_number_storage import JobNumberStorage
+from sqlalchemy import text
 
 
 class DatabaseHelper:
@@ -45,9 +46,12 @@ class DatabaseHelper:
         Returns:
             tuple: The existing job contacts.
         """
-        existing_job_contacts = ACCESS_DATABASE.connection.execute(
-            f"SELECT [Additional Information], [Customer Contact Information],\
-[Customer Requests] FROM [Existing Jobs] WHERE [Job Number] = '{job_number}'"
+        existing_job_contacts = ACCESS_DATABASE.session.execute(
+            text(
+                f"SELECT [Additional Information],\
+ [Customer Contact Information], [Customer Requests] FROM\
+ [Existing Jobs] WHERE [Job Number] = '{job_number}'"
+            )
         )
         return existing_job_contacts.fetchall()
 
@@ -69,6 +73,9 @@ class FileEntryModel:
         13: "Error creating new job number {job_number}.",
         14: "Activating job number {job_number}...",
         15: "New entry for job number {job_number} created.",
+        16: "Please enter a valid Job Number.",
+        17: "Unable to retrieve data for job number {job_number}.",
+        18: "Existing job contacts retrieved for job number {job_number}.",
     }
 
     GUI_TO_PARCEL_KEY_MAP = {
@@ -90,14 +97,25 @@ class FileEntryModel:
         Returns:
             dict: The job data to be submitted to the access database.
         """
-        job_number = self.inputs["Job Number"].get()
+        job_number = self.inputs["Job Number"].get().strip()
+        if not job_number or len(job_number) < 8 or len(job_number) > 14:
+            return self.update_info_label(16)
 
         county = self.inputs["County"].get()
-        parcel_id = self.inputs["Parcel ID"].get()
+        parcel_id = self.inputs["Parcel ID"].get().strip()
         if not county or not parcel_id:
             return self.update_info_label(3)
+        elif county not in PARCEL_DATA_COUNTIES:
+            return self.update_info_label(8, county=county)
+        elif not parcel_id.isnumeric():
+            return self.update_info_label(2)
 
-        parcel_data = DataCollector(parcel_id, county).parcel_data
+        try:
+            parcel_data = DataCollector(parcel_id, county).parcel_data
+        except IndexError as e:
+            logging.error(e)
+            return self.update_info_label(4, parcel_id=parcel_id, county=county)
+
         logging.info(parcel_data)
 
         job_data = {
@@ -159,6 +177,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number already exists in the
         database and is active.
@@ -167,12 +186,14 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(10, job_number=job_number)
         try:
             logging.info(f"Updating job number {job_number}...")
-            self.database_helper.update_table(existing_job_table)
-            self.database_helper.update_table(active_job_table)
+            self.database_helper.update_table(existing_job_table, commit)
+            self.database_helper.update_table(active_job_table, commit)
             self.update_info_label(11, job_number=job_number)
             logging.info(f"Job Number {job_number} updated.")
         except Exception as e:
@@ -184,6 +205,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number already exists in the
         database but is not active.
@@ -192,12 +214,14 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(10, job_number=job_number)
         try:
             logging.info(f"Activating job number {job_number}...")
-            self.database_helper.update_table(existing_job_table)
-            self.database_helper.insert_into_table(active_job_table)
+            self.database_helper.update_table(existing_job_table, commit)
+            self.database_helper.insert_into_table(active_job_table, commit)
             self.update_info_label(14, job_number=job_number)
             logging.info(f"Job Number {job_number} activated.")
         except Exception as e:
@@ -209,6 +233,7 @@ class FileEntryModel:
         job_number: str,
         existing_job_table: Table,
         active_job_table: Table,
+        commit: bool = True,
     ) -> None:
         """Handles the case where the job number does not exist in the
         database.
@@ -217,23 +242,32 @@ class FileEntryModel:
             job_number (str): The job number to be updated.
             existing_job_table (Table): The existing job table.
             active_job_table (Table): The active job table.
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
         """
         self.update_info_label(12, job_number=job_number)
         try:
             logging.info(f"Creating new job number {job_number}...")
-            self.database_helper.insert_into_table(existing_job_table)
-            self.database_helper.insert_into_table(active_job_table)
+            self.database_helper.insert_into_table(existing_job_table, commit)
+            self.database_helper.insert_into_table(active_job_table, commit)
             self.update_info_label(15, job_number=job_number)
             logging.info(f"Job Number {job_number} created.")
         except Exception as e:
             logging.error(e)
             self.update_info_label(13, job_number=job_number)
 
-    def submit_job_data(self) -> None:
+    def submit_job_data(self, commit: bool = True) -> None:
         """Submits the job data to the access database. If the job
         number already exists in the database, the job data will be
-        updated. Otherwise, a new job will be created."""
+        updated. Otherwise, a new job will be created.
+
+        Args:
+            commit (bool, optional): Whether or not to commit the
+                changes to the database. Defaults to True.
+        """
         job_data = self.gather_job_data()
+        if not job_data:
+            return
         job_number = job_data["Job Number"]
 
         existing_job_table, active_job_table = self.configure_tables(job_data)
@@ -242,16 +276,19 @@ class FileEntryModel:
         job_is_active = job_number in self.job_number_storage.active_job_numbers
 
         if job_exists and job_is_active:
+            logging.info("Updating active job.")
             self.handle_existing_active_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         elif job_exists and not job_is_active:
+            logging.info("Inserting existing job into active jobs.")
             self.handle_existing_inactive_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         elif not job_exists:
+            logging.info("Creating new job.")
             self.handle_new_job(
-                job_number, existing_job_table, active_job_table
+                job_number, existing_job_table, active_job_table, commit
             )
         else:
             self.update_info_label(12, job_number=job_number)
@@ -261,15 +298,6 @@ class FileEntryModel:
         generated by taking the current year and adding a number to the
         end of it. The number is the next unused job number in the
         database."""
-        current_year = self.job_number_storage.year
-
-        existing_current_year_jobs = ACCESS_DATABASE.connection.execute(
-            f"SELECT [Job Number] FROM [Existing Jobs] WHERE [Job Number]\
-    LIKE '{current_year}%'"
-        )
-        self.job_number_storage.add_current_year_job_numbers(
-            existing_current_year_jobs
-        )
         unused_job_number = self.job_number_storage.unused_job_number
 
         self.inputs["Job Number"].delete(0, "end")
@@ -309,13 +337,17 @@ class FileEntryModel:
         and populates the contact information input field with the
         contact information."""
         job_number = self.inputs["Job Number"].get()
-        contact_info = self.database_helper.gather_existing_job_contacts(
-            job_number
-        )[0]
+        job_info = self.database_helper.gather_existing_job_contacts(job_number)
+        if not job_info:
+            self.update_info_label(17, job_number=job_number)
+            return
 
-        additional_info = contact_info[0]
-        contact_info = contact_info[1]
-        requested_services = contact_info[2]
+        job_info = job_info[0]
+        logging.debug(job_info)
+
+        additional_info = job_info[0]
+        contact_info = job_info[1]
+        requested_services = job_info[2]
 
         contacts = {
             "Additional Information": additional_info,
@@ -324,11 +356,11 @@ class FileEntryModel:
         }
 
         for key, value in contacts.items():
-            if value == "N":
-                value = ""
+            logging.debug(f"Key: {key}, Value: {value}")
             if value:
                 self.inputs[key].delete(0, "end")
                 self.inputs[key].insert(0, value)
+        self.update_info_label(18, job_number=job_number)
 
     def clear_inputs(self) -> None:
         """Clears all the input fields."""

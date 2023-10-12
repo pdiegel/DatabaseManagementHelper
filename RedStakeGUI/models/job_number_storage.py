@@ -1,26 +1,13 @@
 import datetime
-from sqlalchemy.sql import text
+from RedStakeGUI.models.access_database import AccessDB
 
 
 class JobNumberStorage:
-    def __init__(self, database):
+    def __init__(self, database: AccessDB):
         self.database = database
         self.now = datetime.datetime.now()
         self.year = self.now.year % 100
         self.month = self.now.month
-        self.current_year_job_numbers = set()
-        self.existing_job_numbers = set()
-        self.active_job_numbers = set()
-
-        active_jobs = self.database.session.execute(
-            text("SELECT [Job Number] FROM [Active Jobs]")
-        )
-
-        existing_jobs = self.database.session.execute(
-            text("SELECT [Job Number] FROM [Existing Jobs]")
-        )
-        self.add_active_job_numbers(active_jobs)
-        self.add_existing_job_numbers(existing_jobs)
 
     def get_job_number_prefix(self, num_previous_months: int = 0) -> str:
         month = self.month
@@ -55,6 +42,31 @@ class JobNumberStorage:
             new_fn = self.get_job_number_prefix() + "0100"
 
         return new_fn
+
+    @property
+    def current_year_job_numbers(self) -> set[str]:
+        current_year_jobs = self.database.execute_generic_query(
+            f"SELECT [Job Number] FROM [Existing Jobs] WHERE [Job Number] LIKE\
+ '{self.year}%'"
+        )
+        job_numbers = [job_number[0] for job_number in current_year_jobs]
+        return set(job_numbers)
+
+    @property
+    def existing_job_numbers(self) -> set[str]:
+        existing_jobs = self.database.execute_generic_query(
+            "SELECT [Job Number] FROM [Existing Jobs]"
+        )
+        job_numbers = [job_number[0] for job_number in existing_jobs]
+        return set(job_numbers)
+
+    @property
+    def active_job_numbers(self) -> set[str]:
+        active_jobs = self.database.execute_generic_query(
+            "SELECT [Job Number] FROM [Active Jobs]"
+        )
+        job_numbers = [job_number[0] for job_number in active_jobs]
+        return set(job_numbers)
 
     def add_job_number(self, job_number: str):
         self.existing_job_numbers.add(job_number)

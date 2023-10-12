@@ -10,12 +10,14 @@ def setup_file_status_checker_tab(
 
     Args:
         file_status_tab (FileStatusCheckerView): The file status checker tab.
+        test_file_number (str): The test file number.
 
-    Returns:
+    Yields:
         FileStatusCheckerView: The initialized file status checker tab.
     """
     file_status_tab.inputs["File Number"].insert(0, test_file_number)
-    return file_status_tab
+    yield file_status_tab
+    file_status_tab.destroy()
 
 
 def test_file_status_checker_lookup_file_button(
