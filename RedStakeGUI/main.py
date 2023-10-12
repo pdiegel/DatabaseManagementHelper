@@ -1,5 +1,7 @@
 # Import the logging config before any other imports.
 import RedStakeGUI.logging_config
+import sqlalchemy_access as sa_a
+import sqlalchemy_access.pyodbc as sa_a_pyodbc
 import logging
 from tkinter import Event
 
