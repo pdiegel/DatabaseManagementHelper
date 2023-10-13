@@ -2,7 +2,6 @@ import pytest
 from RedStakeGUI.views.intake_sheet import IntakeSheetView
 from RedStakeGUI.constants import QUOTES_DIRECTORY
 import os
-import pathlib
 
 
 @pytest.fixture(scope="module")
@@ -76,6 +75,24 @@ def test_intake_sheet_save_button(
 
     intake_sheet_tab.buttons["Save"]()
     assert file_name in os.listdir(QUOTES_DIRECTORY)
+
+
+def test_intake_sheet_settings_button(
+    setup_intake_sheet_tab: IntakeSheetView,
+) -> None:
+    """Testing if the settings button works correctly.
+
+    Args:
+        setup_intake_sheet_tab (IntakeSheetView): The intake sheet tab.
+    """
+    intake_sheet_tab = setup_intake_sheet_tab
+    assert intake_sheet_tab.model.settings_window is None
+
+    intake_sheet_tab.buttons["Settings"]()
+    assert intake_sheet_tab.model.settings_window is not None
+
+    intake_sheet_tab.model.settings_window.destroy()
+    assert intake_sheet_tab.model.settings_window is None
 
 
 def test_intake_sheet_clear_button(
