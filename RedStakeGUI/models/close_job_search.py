@@ -93,7 +93,7 @@ class CloseJobSearchModel:
             int: The weighted fuzzy score.
         """
 
-        if search_type == "Subdivision":
+        if search_type == "Subdivision Name":
             return fuzz.token_sort_ratio(search_key, target_key)
 
         standardized_address = self.standardize_address(search_key)

@@ -1,5 +1,8 @@
 import pytest
 from RedStakeGUI.views.intake_sheet import IntakeSheetView
+from RedStakeGUI.constants import QUOTES_DIRECTORY
+import os
+import pathlib
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +53,29 @@ def test_intake_sheet_get_parcel_info_button(
             "Plat Book & Page",
         }:
             assert value.get() != ""
+
+
+def test_intake_sheet_save_button(
+    setup_intake_sheet_tab: IntakeSheetView,
+) -> None:
+    """Testing if the save button works correctly.
+
+    Args:
+        setup_intake_sheet_tab (IntakeSheetView): The intake sheet tab.
+    """
+    intake_sheet_tab = setup_intake_sheet_tab
+    inputs = intake_sheet_tab.inputs
+
+    assert inputs["Address"].get() != ""
+    file_name = inputs["Address"].get() + ".txt"
+    quote_path = QUOTES_DIRECTORY / file_name
+    if os.path.exists(quote_path):
+        os.remove(quote_path)
+
+    assert file_name not in os.listdir(QUOTES_DIRECTORY)
+
+    intake_sheet_tab.buttons["Save"]()
+    assert file_name in os.listdir(QUOTES_DIRECTORY)
 
 
 def test_intake_sheet_clear_button(
