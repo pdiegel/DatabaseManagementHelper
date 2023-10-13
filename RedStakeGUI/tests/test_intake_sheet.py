@@ -39,10 +39,17 @@ def test_intake_sheet_get_parcel_info_button(
     assert inputs["Plat"].get() == ""
 
     intake_sheet_tab.buttons["Get Parcel Info"]()
-    assert inputs["Red Stake File Number"].get() == ""
-    assert inputs["Address"].get() == ""
-    assert inputs["Lot & Block"].get() == ""
-    assert inputs["Plat"].get() == ""
+
+    for key, value in inputs.items():
+        print(f"{key}: '{value.get()}'")
+        if key in {
+            "Zip Code",
+            "Address",
+            "Lot & Block",
+            "Plat",
+            "Plat Book & Page",
+        }:
+            assert value.get() != ""
 
 
 def test_intake_sheet_clear_button(
