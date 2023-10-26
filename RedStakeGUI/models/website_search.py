@@ -27,6 +27,7 @@ class WebsiteSearchModel:
     def __init__(self, inputs: dict, info_label: ttk.Label):
         self.inputs = inputs
         self.info_label = info_label
+        self.inputs["Parcel ID"].bind("<Return>", self.on_enter)
 
     def validate_parcel_inputs(self, parcel_id: str, county: str) -> bool:
         """Validates the Parcel ID and County fields. Displays an error
@@ -113,3 +114,9 @@ class WebsiteSearchModel:
         """
         text = self.INFO_LABEL_CODES[code].format(**kwargs)
         self.info_label.config(text=text)
+
+    def on_enter(self, _event) -> None:
+        """Executes the open_parcel_websites method when the user
+        presses the Enter key.
+        """
+        self.open_parcel_websites()

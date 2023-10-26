@@ -37,7 +37,7 @@ def test_file_status_checker_lookup_file_button(
 
     file_status_tab.buttons["Lookup File"]()
     assert program_inputs["Property Address"].get().upper() == "7607 LINKS CT"
-    assert program_inputs["Parcel ID"].get() == "1920561105"
+    assert file_status_tab.inputs["Parcel ID"].get() == "1920561105"
     assert program_inputs["Lot"].get() == "1"
     assert program_inputs["Block"].get() == ""
     assert program_inputs["Subdivision"].get().upper() == "LINKS AT PALM-AIRE"
