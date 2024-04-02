@@ -17,7 +17,7 @@ class FileStatusCheckerView(BaseView):
         self.create_header("File Status Lookup")
 
         # Input values will be populated in the create_fields method.
-        self.inputs = {"File Number": None}
+        self.inputs = {"File Number": None, "Parcel ID": None}
 
         # These inputs will not be entered by the user. They will be
         # programmatically entered by the program.
@@ -32,7 +32,6 @@ class FileStatusCheckerView(BaseView):
             "Fieldwork Status",
             "Inhouse Status",
             "County",
-            "Parcel ID",
             "Signed",
             "Signed Scope of Work",
             "Signature Date",
