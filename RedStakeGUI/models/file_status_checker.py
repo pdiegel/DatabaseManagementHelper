@@ -14,7 +14,10 @@ class FileStatusCheckerModel:
         2: "File Number {file_number} found.",
         3: "File number copied to clipboard.",
         4: "Inputs cleared.",
-        5: "Please enter a file number.",
+        5: "Please enter a file number or parcel ID.",
+        6: "Parcel ID {parcel_id} not found.",
+        7: "Parcel ID {parcel_id} found.",
+        8: "Unable to find file number or parcel ID.",
     }
 
     def __init__(self, view: ttk.Frame):
@@ -22,6 +25,7 @@ class FileStatusCheckerModel:
         self.programmable_inputs = view.programmable_inputs
         self.info_label = view.info_label
         self.inputs["File Number"].bind("<Return>", self.on_enter)
+        self.inputs["Parcel ID"].bind("<Return>", self.on_enter)
 
     def lookup_file(self) -> None:
         """Looks up the file number in the database and populates the
@@ -32,33 +36,43 @@ class FileStatusCheckerModel:
         will display a success message.
         """
         access_db = ACCESS_DATABASE
-        file_number = self.inputs["File Number"].get().strip()
-        if not file_number:
-            logging.info("No file number entered.")
+        entered_file_number = self.inputs["File Number"].get().strip()
+        entered_parcel_id = self.inputs["Parcel ID"].get().strip()
+        if not entered_file_number and not entered_parcel_id:
+            logging.info("No file number or parcel ID entered.")
             self.update_info_label(5)
             return
 
-        logging.info(f"Looking up file number {file_number} in database.")
+        logging.info(
+            f"Looking up file number {entered_file_number} in database."
+        )
 
         (
             active_job_data,
             existing_job_data,
             signature_status_data,
-        ) = self.get_job_data(access_db, file_number)
+        ) = self.get_job_data(access_db, entered_file_number, entered_parcel_id)
 
         (
             order_date,
             fieldwork_status,
             inhouse_status,
             county,
-            parcel_id,
             scope_of_work,
         ) = (
-            active_job_data[0] if active_job_data else [""] * 6
+            active_job_data[0] if active_job_data else [""] * 5
         )
 
-        address_number, street_name, lot, block, subdivision = (
-            existing_job_data[0] if existing_job_data else [""] * 5
+        (
+            file_number,
+            parcel_id,
+            address_number,
+            street_name,
+            lot,
+            block,
+            subdivision,
+        ) = (
+            existing_job_data[0] if existing_job_data else [""] * 7
         )
 
         (
@@ -82,6 +96,7 @@ class FileStatusCheckerModel:
         logging.info("Successfully formatted data from database.")
 
         data_map = {
+            "File Number": file_number,
             "Order Date": order_date,
             "Active": active,
             "Fieldwork Status": fieldwork_status,
@@ -101,6 +116,14 @@ class FileStatusCheckerModel:
         logging.info(f"Determined data map: {data_map}.")
 
         for label, entry_data in data_map.items():
+            if label in self.inputs.keys():
+                if not existing_job_data:
+                    break
+                if not entry_data:
+                    entry_data = ""
+                self.inputs[label].delete(0, "end")
+                self.inputs[label].insert(0, entry_data)
+                continue
             entry_data = str(entry_data).title() if entry_data else ""
             entry = self.programmable_inputs[label]
             # Cannot insert text into a readonly entry
@@ -110,12 +133,17 @@ class FileStatusCheckerModel:
             entry.config(state="readonly")
 
         if not existing_job_data:
-            self.update_info_label(1, file_number=file_number)
+            if entered_parcel_id and not entered_file_number:
+                self.update_info_label(6, parcel_id=entered_parcel_id)
+            elif entered_parcel_id and entered_file_number:
+                self.update_info_label(8)
+            else:
+                self.update_info_label(1, file_number=entered_file_number)
         else:
             self.update_info_label(2, file_number=file_number)
 
     def get_job_data(
-        self, access_db: AccessDB, file_number: str
+        self, access_db: AccessDB, file_number: str, parcel_id: str
     ) -> Tuple[List[Tuple], List[Tuple], List[Tuple]]:
         """Gets the job data from the database. If the job is not found,
         an empty list will be returned.
@@ -123,20 +151,31 @@ class FileStatusCheckerModel:
         Args:
             access_db (AccessDB): The AccessDB object.
             file_number (str): The file number to look up.
+            parcel_id (str): The parcel ID to look up.
 
         Returns:
             Tuple[List[Tuple], List[Tuple], List[Tuple]]: A tuple of
                 lists containing the job data.
         """
-        existing_jobs_query = f"""SELECT [Address Number], [Street Name],\
- Lot, block, subdivision FROM [Existing Jobs] WHERE [Job Number] =\
- '{file_number}'"""
+
+        if not file_number or len(file_number) != 8:
+            file_number = access_db.execute_generic_query(
+                f"SELECT \
+[Job Number] FROM [Existing Jobs] WHERE [Parcel ID] = '{parcel_id}'"
+            )
+            if file_number:
+                file_number = file_number[0][0]
+
+        search_query = f"[Job Number] = '{file_number}'"
+
+        existing_jobs_query = f"""SELECT [Job Number], [Parcel ID], \
+[Address Number], [Street Name], Lot, block, subdivision FROM [Existing Jobs] \
+WHERE {search_query}"""
         active_jobs_query = f"""SELECT [Order Date], [Fieldwork Status],\
- [Inhouse Status], [County], [Parcel ID], [Requested Services]\
- FROM [Active Jobs] WHERE [Job Number] = '{file_number}'"""
+ [Inhouse Status], [County], [Requested Services]\
+ FROM [Active Jobs] WHERE {search_query}"""
         signature_status_query = f"""SELECT [Signed], [Type of Survey],\
- [Signature Date], [Notes] FROM [Signature Status] WHERE [Job Number] =\
- '{file_number}'"""
+ [Signature Date], [Notes] FROM [Signature Status] WHERE {search_query}"""
 
         logging.info("Running query for active job data..")
         try:

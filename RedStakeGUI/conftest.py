@@ -10,6 +10,8 @@ from RedStakeGUI.views.file_status_checker import FileStatusCheckerView
 from RedStakeGUI.views.intake_sheet import IntakeSheetView
 from RedStakeGUI.views.website_search import WebsiteSearchView
 
+from typing import Generator
+
 
 @pytest.fixture(scope="module")
 def test_address() -> str:
@@ -52,6 +54,26 @@ def test_sarasota_parcel_id() -> str:
 
 
 @pytest.fixture(scope="module")
+def test_file_data() -> dict[str, str]:
+    """Fixture to get a test file data.
+
+    Returns:
+        dict[str, str]: The test file data.
+    """
+    fields = {
+        "Job Date": "",
+        "Job Number": "23060232",
+        "Parcel ID": "7880000000",
+        "County": "Manatee",
+        "Property Address": "741 Emerald Harbor Drive",
+        "Lot": "50",
+        "Block": "",
+        "Subdivision": "Dream Island",
+    }
+    return fields
+
+
+@pytest.fixture(scope="module")
 def test_file_entry_data() -> dict[str, str]:
     """Fixture to get a test file entry data.
 
@@ -76,7 +98,7 @@ def test_file_entry_data() -> dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def main_app() -> MainApp:
+def main_app() -> Generator[MainApp, None, None]:
     """Fixture to get the main app.
 
     Yields:
@@ -94,7 +116,9 @@ def main_app() -> MainApp:
 
 
 @pytest.fixture(scope="module")
-def close_job_tab(main_app: MainApp) -> CloseJobSearchView:
+def close_job_tab(
+    main_app: MainApp,
+) -> Generator[CloseJobSearchView, None, None]:
     """Fixture to get the close job tab from the main app.
 
     Args:
@@ -109,7 +133,9 @@ def close_job_tab(main_app: MainApp) -> CloseJobSearchView:
 
 
 @pytest.fixture(scope="module")
-def file_status_tab(main_app: MainApp) -> FileStatusCheckerView:
+def file_status_tab(
+    main_app: MainApp,
+) -> Generator[FileStatusCheckerView, None, None]:
     """Fixture to get the file status tab from the main app.
 
     Args:
@@ -124,7 +150,7 @@ def file_status_tab(main_app: MainApp) -> FileStatusCheckerView:
 
 
 @pytest.fixture(scope="module")
-def file_entry_tab(main_app: MainApp) -> FileEntryView:
+def file_entry_tab(main_app: MainApp) -> Generator[FileEntryView, None, None]:
     """Fixture to get the file entry tab from the main app.
 
     Args:
