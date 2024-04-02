@@ -4,13 +4,14 @@ from RedStakeGUI.views.file_entry import FileEntryView
 from ttkbootstrap import Entry, Combobox, DateEntry
 from RedStakeGUI.constants import ACCESS_DATABASE
 from sqlalchemy import text
+from typing import Generator
 
 
 @pytest.fixture(scope="module")
 def setup_file_entry_tab(
     file_entry_tab: FileEntryView,
     test_file_entry_data: dict[str, str],
-) -> FileEntryView:
+) -> Generator[FileEntryView, None, None]:
     """Fixture to set up the file entry tab for testing.
 
     Args:
@@ -47,19 +48,18 @@ def test_file_entry_generate_fn_button(file_entry_tab: FileEntryView) -> None:
     # Some of our file number have letters as suffixes, so we need to
     # strip the letters and convert to integers to get the largest
     # number.
-    largest_job_number = max(
+    newest_existing_job_number = max(
         map(lambda x: int(strip_non_numeric(x)), current_year_job_numbers)
     )
 
-    assert int(job_number_storage.unused_job_number) > largest_job_number
-    assert len(job_number_storage.unused_job_number) == 8
+    new_job_number = job_number_storage.unused_job_number
+
+    assert int(new_job_number) > newest_existing_job_number
+    assert len(new_job_number) == 8
 
     assert file_entry_tab.inputs["Job Number"].get() == ""
     file_entry_tab.buttons["Generate FN"]()
-    assert (
-        file_entry_tab.inputs["Job Number"].get()
-        == job_number_storage.unused_job_number
-    )
+    assert file_entry_tab.inputs["Job Number"].get() == new_job_number
     file_entry_tab.model.clear_inputs()
 
 
@@ -125,6 +125,7 @@ def test_file_entry_gather_contacts_button(
         "Contact Information",
         "Additional Information",
         "Requested Services",
+        "Parcel ID",
     }
 
     for variable in variables_to_check:

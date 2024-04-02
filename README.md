@@ -22,6 +22,7 @@ To utilize the suite, follow these steps:
 
     ``` bash
     git clone https://github.com/pdiegel/LandSurveyWorkflowSuite.git
+    cd LandSurveyWorkflowSuite
     ```
 
 2. **Install the necessary dependencies.**
@@ -33,7 +34,7 @@ To utilize the suite, follow these steps:
 3. **Run the main script.**
 
     ``` bash
-    python main.py
+    python -m RedStakeGUI.main
     ```
 
 Detailed usage for each tab can be found in their respective Python files.

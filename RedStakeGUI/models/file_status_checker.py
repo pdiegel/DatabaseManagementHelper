@@ -1,6 +1,7 @@
 import logging
 from tkinter import Event
 from typing import List, Tuple
+from datetime import datetime
 
 import ttkbootstrap as ttk
 
@@ -88,10 +89,12 @@ class FileStatusCheckerModel:
         address = f"{address_number} {street_name}".strip()
         active = "Yes" if active_job_data else "No"
 
-        order_date = order_date.strftime("%m/%d/%Y") if order_date else ""
-        signature_date = (
-            signature_date.strftime("%m/%d/%Y") if signature_date else ""
-        )
+        dates_to_format = [
+            "Order Date",
+            "Signature Date",
+            "Fieldwork Status",
+            "Inhouse Status",
+        ]
 
         logging.info("Successfully formatted data from database.")
 
@@ -113,13 +116,19 @@ class FileStatusCheckerModel:
             "Signature Date": signature_date,
             "Signature Notes": signature_notes,
         }
+
+        for date in dates_to_format:
+            data_map[date] = (
+                data_map[date].strftime("%m/%d/%Y")
+                if data_map[date] and isinstance(data_map[date], datetime)
+                else ""
+            )
         logging.info(f"Determined data map: {data_map}.")
 
         for label, entry_data in data_map.items():
             if label in self.inputs.keys():
                 if not existing_job_data:
                     break
-                print(f"Label: {label}. Entry: {entry_data}")
                 if not entry_data:
                     entry_data = ""
                 self.inputs[label].delete(0, "end")

@@ -49,7 +49,7 @@ class DatabaseHelper:
         existing_job_contacts = ACCESS_DATABASE.session.execute(
             text(
                 f"SELECT [Additional Information],\
- [Customer Contact Information], [Customer Requests] FROM\
+ [Customer Contact Information], [Customer Requests], [Parcel ID] FROM\
  [Existing Jobs] WHERE [Job Number] = '{job_number}'"
             )
         )
@@ -348,11 +348,13 @@ class FileEntryModel:
         additional_info = job_info[0]
         contact_info = job_info[1]
         requested_services = job_info[2]
+        parcel_id = job_info[3]
 
         contacts = {
             "Additional Information": additional_info,
             "Contact Information": contact_info,
             "Requested Services": requested_services,
+            "Parcel ID": parcel_id,
         }
 
         for key, value in contacts.items():
