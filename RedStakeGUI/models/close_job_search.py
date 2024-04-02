@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import Tuple
 
 import pyperclip
 import ttkbootstrap as ttk
@@ -50,14 +49,14 @@ class CloseJobSearchModel:
         else:
             choices = jobs_df["Subdivision"]
 
-        # Get the choices that have a fuzzy score of 60 or better
+        # Get the choices that have a fuzzy score of 75 or higher
         fuzzy_scores = [
             choice
             for choice in choices
             if self.weighted_fuzzy_score(
                 search_keyword.upper(), choice.upper(), search_type
             )
-            >= 70
+            >= 75
         ]
 
         # Get the corresponding rows in the DataFrame
@@ -80,104 +79,27 @@ class CloseJobSearchModel:
         search_key: str,
         target_key: str,
         search_type: str,
-        weights: Tuple[float, float, float] = (0, 0.9, 0.1),
     ) -> int:
         """Calculates the weighted fuzzy score for the search key and
-        target key. The weights are used to determine how much each
-        component of the fuzzy score is worth. Property Address in this case
-        is worth 70% of the fuzzy score, house number is worth 20% and
-        street type is worth 10%.
+        target key.
 
         Args:
             search_key (str): The search key.
             target_key (str): The target key.
             search_type (str): The search type. Either "Property Address" or
                 "Subdivision".
-            weights (Tuple[float, float, float], optional): The weights
-                for the fuzzy score. Defaults to (0.2, 0.7, 0.1).
 
         Returns:
             int: The weighted fuzzy score.
         """
 
-        # Tokenize the search and target addresses
-        if search_type == "Subdivision":
-            return fuzz.ratio(search_key, target_key)
+        if search_type == "Subdivision Name":
+            return fuzz.token_sort_ratio(search_key, target_key)
 
-        search_tokens = self.tokenize_address(search_key)
-        target_tokens = self.tokenize_address(target_key)
+        standardized_address = self.standardize_address(search_key)
+        standardized_target = self.standardize_address(target_key)
 
-        if search_tokens == ("", "", "") or target_tokens == ("", "", ""):
-            return 0
-
-        # Make sure both have the same number of tokens
-        # (you might want more robust handling here)
-        if len(search_tokens) != len(target_tokens):
-            return 0
-
-        # Calculate individual fuzzy scores for each token
-        token_scores = [
-            fuzz.ratio(search_tokens[i], target_tokens[i])
-            for i in range(len(search_tokens))
-        ]
-
-        # Calculate the weighted score
-        weighted_score = sum(
-            token_scores[i] * weights[i] for i in range(len(token_scores))
-        )
-        weighted_score /= sum(weights)
-
-        return weighted_score
-
-    def tokenize_address(self, address: str) -> Tuple[str, str, str]:
-        """Tokenizes the address into Property Address, house number and
-        street type.
-
-        Args:
-            address (str): The address to tokenize.
-
-        Returns:
-            Tuple[str, str, str]: The Property Address, house number and
-                street type.
-        """
-
-        # Handle multiple address types
-        match = re.match(r"(\d*)\s*(.*?)(?=\s*\w*\s*$)(\s+\w+\s*)?$", address)
-        if not match:
-            return "", "", ""
-
-        house_number, street_name, street_type = match.groups()
-
-        symbols_to_remove = ("#", "(", ")", "-", ".", ",", ":", ";", "'")
-        for symbol in symbols_to_remove:
-            street_name = street_name.replace(symbol, "")
-
-        # Handle common abbreviations
-        street_type_abbr = {
-            "ROAD": "RD",
-            "STREET": "ST",
-            "AVENUE": "AVE",
-            "DRIVE": "DR",
-            "LANE": "LN",
-            "COURT": "CT",
-            "CIRCLE": "CIR",
-            "BOULEVARD": "BLVD",
-            "TERRACE": "TER",
-            "PLACE": "PL",
-            "SQUARE": "SQ",
-            "GROVE": "GRV",
-            "AVN": "AVE",
-        }
-
-        if street_type:
-            for key, value in street_type_abbr.items():
-                street_type = street_type.upper().replace(key, value)
-                if street_type not in street_type_abbr.values():
-                    street_type = ""
-        else:
-            street_type = ""
-
-        return house_number, street_name, street_type
+        return fuzz.token_sort_ratio(standardized_address, standardized_target)
 
     def copy_selected_rows(self) -> None:
         """Copies the selected rows from the treeview widget to the
@@ -356,3 +278,120 @@ class CloseJobSearchModel:
 
         rows = [self.tree.item(row, "values") for row in selection_index]
         return rows
+
+    def standardize_address(self, address: str) -> str:
+        if not address:
+            return ""
+
+        split_address = address.split(" ")
+        if len(split_address) > 1:
+            if split_address[0].isdigit():
+                address = " ".join(split_address[1:])
+
+        address = address.replace("None", "").strip()
+
+        while "(" in address:
+            starting_point = address.index("(")
+            if ")" in address:
+                ending_point = address.index(")")
+            else:
+                ending_point = len(address) - 1
+            address = (
+                address[:starting_point] + " " + address[ending_point + 1 :]
+            )
+
+        while "  " in address:
+            address = address.replace("  ", " ")
+
+        string_format_abbr = {
+            " ST ": " ",
+            " RD ": " ",
+            " DR ": " ",
+            " AVE ": " ",
+            " BLVD ": " ",
+            " LN ": " ",
+            " CT ": " ",
+            " PL ": " ",
+            " CIR ": " ",
+            " TRL ": " ",
+            " PKWY ": " ",
+            " HWY ": " ",
+            "N.": "NORTH",
+            "S.": "SOUTH",
+            "E.": "EAST",
+            "W.": "WEST",
+            " N ": "NORTH ",
+            " S ": "SOUTH ",
+            " E ": "EAST ",
+            " W ": "WEST ",
+            "ST.": "STREET",
+            "RD.": "ROAD",
+            "DR.": "DRIVE",
+            "AVE.": "AVENUE",
+            "BLVD.": "BOULEVARD",
+            "LN.": "LANE",
+            "CT.": "COURT",
+            "PL.": "PLACE",
+            "CIR.": "CIRCLE",
+            "TRL.": "TRAIL",
+            "PKWY.": "PARKWAY",
+            "HWY.": "HIGHWAY",
+            "EXPY.": "EXPRESSWAY",
+            "#": "",
+            "APT.": "APARTMENT",
+            "UNIT": "APARTMENT",
+            "LOT": "",
+            "BLOCK": "",
+            "SECTION": "",
+            "TOWNSHIP": "",
+            "RANGE": "",
+            "SUBDIVISION": "",
+            "-": "",
+            "  ": " ",
+            ".": "",
+            ",": "",
+            ":": "",
+            ";": "",
+            "'": "",
+        }
+
+        address = address.upper()
+
+        for key, value in string_format_abbr.items():
+            address = address.replace(key, value)
+
+        ending_replacements = {
+            " ST": " STREET",
+            " RD": " ROAD",
+            " DR": " DRIVE",
+            " AVE": " AVENUE",
+            " BLVD": " BOULEVARD",
+            " LN": " LANE",
+            " CT": " COURT",
+            " PL": " PLACE",
+            " CIR": " CIRCLE",
+            " TRL": " TRAIL",
+            " PKWY": " PARKWAY",
+            " HWY": " HIGHWAY",
+            " E": " EAST",
+            " W": " WEST",
+            " N": " NORTH",
+            " S": " SOUTH",
+            " STREET": "",
+            " ROAD": "",
+            " DRIVE": "",
+            " AVENUE": "",
+            " BOULEVARD": "",
+            " LANE": "",
+            " COURT": "",
+            " PLACE": "",
+            " CIRCLE": "",
+            " TRAIL": "",
+            " PARKWAY": "",
+        }
+
+        for key, value in ending_replacements.items():
+            if address.endswith(key):
+                address = address.replace(key, value)
+
+        return address.strip()

@@ -162,3 +162,18 @@ def file_entry_tab(main_app: MainApp) -> Generator[FileEntryView, None, None]:
     tab = main_app.notebook_tabs["File Entry"]
     yield tab
     tab.destroy()
+
+
+@pytest.fixture(scope="module")
+def intake_sheet_tab(main_app: MainApp) -> IntakeSheetView:
+    """Fixture to get the intake sheet tab from the main app.
+
+    Args:
+        main_app (MainApp): The main app.
+
+    Yields:
+        IntakeSheetView: The intake sheet tab.
+    """
+    tab = main_app.notebook_tabs["Intake Sheet"]
+    yield tab
+    tab.destroy()
