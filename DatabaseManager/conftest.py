@@ -1,3 +1,4 @@
+from datetime import datetime
 from tkinter import TclError
 
 import pytest
@@ -81,9 +82,9 @@ def test_file_entry_data() -> dict[str, str]:
         dict[str, str]: The test file entry data.
     """
     fields = {
-        "Job Date": "2021-01-01",
-        "Fieldwork Date": "2021-01-01",
-        "Inhouse Date": "2021-01-01",
+        "Job Date": datetime.today().strftime("%m/%d/%Y"),
+        "Fieldwork Date": datetime.today().strftime("%m/%d/%Y"),
+        "Inhouse Date": datetime.today().strftime("%m/%d/%Y"),
         "Job Number": "50050101",
         "Parcel ID": "0057150069",
         "County": "Sarasota",

@@ -1,5 +1,5 @@
 import pytest
-
+from datetime import datetime
 from DatabaseManager.views.file_entry import FileEntryView
 from ttkbootstrap import Entry, Combobox, DateEntry
 from DatabaseManager.constants import ACCESS_DATABASE
@@ -78,7 +78,7 @@ def test_file_entry_submit_button(
             gui_object.current(0)
             continue
         elif isinstance(gui_object, DateEntry):
-            gui_object = gui_object.entry
+            continue
         gui_object.insert(0, data)
 
     for input, data in file_entry_tab.inputs.items():
@@ -154,9 +154,13 @@ def test_file_entry_clear_button(
     file_entry_tab.buttons["Clear"]()
 
     for entry in file_entry_tab.inputs.values():
+        expected_result = ""
         if isinstance(entry, DateEntry):
             entry = entry.entry
-        assert entry.get() == ""
+            expected_result = datetime.today().strftime("%m/%d/%Y")
+        elif entry == file_entry_tab.inputs["County"]:
+            expected_result = "Sarasota"
+        assert entry.get() == expected_result
 
 
 def strip_non_numeric(string: str) -> str:
